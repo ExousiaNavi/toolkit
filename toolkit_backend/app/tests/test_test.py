@@ -1,4 +1,4 @@
-from app.services.test_service import TestAutomation
+from app.services.bo_service import TestAutomation
 
 def test_test_login():
     test = TestAutomation("test@example.com", "password123")

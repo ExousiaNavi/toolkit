@@ -1,5 +1,13 @@
-fastapi
+fastapi[all]
 uvicorn
 requests
 playwright
 python-dotenv
+pydub
+SpeechRecognition
+urllib3
+stem
+sounddevice 
+numpy
+google-api-python-client
+google-auth

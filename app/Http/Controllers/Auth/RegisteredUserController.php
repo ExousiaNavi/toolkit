@@ -10,9 +10,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rules;
-use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -62,8 +64,13 @@ class RegisteredUserController extends Controller
         
         event(new Registered($user));
 
-        Auth::login($user);
+        // automatically login the user after registration
+        // Auth::login($user);
+        // throw ValidationException::withMessages([
+        //     'ip_status' => 'Your registration is in process, kindly ask the administrator to grant access!.',
+        // ]);
 
-        return redirect(route('dashboard', absolute: false));
+        return Redirect::route('login')->with(['ip_status'=>'Your registration is in process, kindly ask the administrator to grant access!.']);
+        // return redirect(route('dashboard', absolute: false));
     }
 }

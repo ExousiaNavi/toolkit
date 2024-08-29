@@ -6,7 +6,11 @@ __pycache__/
 
 # Environment Variables
 .env
-
+keys
+sample
+screenshot
+sessions
+ffmpeg-master-latest-win-gpl
 # Virtual Environment
 venv/
 

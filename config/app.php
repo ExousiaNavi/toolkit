@@ -107,6 +107,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Execution time 2 minutes
+    |--------------------------------------------------------------------------
+    |
+    | These configuration options determine the driver used to determine and
+    | manage Laravel's "maintenance mode" status. The "cache" driver will
+    | allow maintenance mode to be controlled across multiple machines.
+    |
+    | Supported drivers: "file", "cache"
+    |
+    */
+    'max_execution_time' => env('PHP_MAX_EXECUTION_TIME', 600),
+
+    /*
+    |--------------------------------------------------------------------------
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |

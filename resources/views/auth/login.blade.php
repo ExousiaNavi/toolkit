@@ -6,6 +6,13 @@
         @csrf
 
         <!-- IP status -->
+        <div class="flex justify-center text-center bg-slate-50 rounded-sm">
+            {{-- <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" /> --}}
+            @if (session('ip_status'))
+                <span class="mt-2 py-2 font-bold tracking-wider text-green-500">Your registration is in process, kindly ask the administrator to grant access!.</span>
+            @endif
+        </div>
+        <!-- IP status -->
         <div class="flex justify-center text-center">
             {{-- <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" /> --}}
             <x-input-error :messages="$errors->get('ip_status')" class="mt-2 py-2 font-bold tracking-wider" />

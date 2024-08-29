@@ -31,9 +31,11 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
         // Baji Contoller
         Route::get('/baji', [BajiController::class, 'index'])->name('baji');
+        Route::post('/baji/currency', [BajiController::class, 'createCurrency'])->name('baji.create.currency');
 
         //send test rquest to backend
-        Route::get('/test',[BackendController::class, 'test'])->name('test');
+        Route::post('/bdt-bo',[BackendController::class, 'BdtBOFetcher'])->name('bo');
+        Route::post('/spreedsheet',[BackendController::class, 'Spreedsheet'])->name('spreedsheet');
         //async request
         Route::get('/total-request', [AsyncRequestController::class, 'totalRequestAccount'])->name('request.account.count');
     });
@@ -41,6 +43,9 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     // User Routes
     Route::group(['prefix' => 'user', 'middleware' => ['role:user'], 'as' => 'user.'], function () {
         Route::get('/dashboard', [UserController::class, 'index'])->name('dashboard');
+        // Baji Contoller
+        Route::get('/baji', [BajiController::class, 'index'])->name('baji');
+        Route::post('/baji/currency', [BajiController::class, 'createCurrency'])->name('baji.create.currency');
     });
 
 });
