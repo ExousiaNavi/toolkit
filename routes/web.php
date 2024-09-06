@@ -6,11 +6,16 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\BajiController;
 use App\Http\Controllers\Bj88Controller;
+use App\Http\Controllers\CtnController;
+use App\Http\Controllers\Ic88Controller;
 use App\Http\Controllers\JeetbuzzController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Six6SController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WinrsController;
 use Illuminate\Support\Facades\Route;
+
+
 
 
 
@@ -59,6 +64,21 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::get('/jeetbuzz', [JeetbuzzController::class, 'index'])->name('jeetbuzz');
          //send request to fetch BO for jeetbuzz
         Route::post('jeetbuzz/bo',[JeetbuzzController::class, 'jeetbuzzBO'])->name('jeetbuzz.bo');
+
+        //jeetbuzz
+        Route::get('/ic88', [Ic88Controller::class, 'index'])->name('ic88');
+         //send request to fetch BO for jeetbuzz
+        Route::post('ic88/bo',[Ic88Controller::class, 'ic88BO'])->name('ic88.bo');
+
+        //winrs
+        Route::get('/winrs', [WinrsController::class, 'index'])->name('winrs');
+         //send request to fetch BO for jeetbuzz
+        Route::post('winrs/bo',[WinrsController::class, 'winrsBO'])->name('winrs.bo');
+
+        //ctn
+        Route::get('/ctn', [CtnController::class, 'index'])->name('ctn');
+         //send request to fetch BO for jeetbuzz
+        Route::post('ctn/bo',[CtnController::class, 'ctnBO'])->name('ctn.bo');
     });
 
     // User Routes

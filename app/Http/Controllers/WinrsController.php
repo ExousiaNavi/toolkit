@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
-use App\Models\Currency;
 use App\Models\FE;
-use App\Models\FTD;
-use App\Models\Platform;
 use Carbon\Carbon;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
+use App\Models\FTD;
+use App\Models\Currency;
+use App\Models\Platform;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\ConnectionException;
 
-class Bj88Controller extends Controller
+
+class WinrsController extends Controller
 {
     protected $url = 'http://127.0.0.1:8082/api/bo/fetch'; //bo
     protected $url_fe = 'http://127.0.0.1:8082/api/fe/data'; //fe
@@ -25,29 +26,23 @@ class Bj88Controller extends Controller
         'password' => 'DataAnalys2024',
         'link' => 'https://www.1xoffer.com/page/manager/login.jsp',
     ];
-
+    
     //index
     public function index(){
         $username = BO::whereDate('created_at', Carbon::today())->pluck('affiliate_username')->toArray();
         // dd($username);
-        $currencies = Currency::where('brand_id', 2)->get();
+        $currencies = Currency::where('brand_id', 6)->get();
         // $bo = BO::with(['fe','ftds', 'clicks_impression'])->whereDate('created_at', Carbon::today())->latest()->paginate(10);
-        $bo = BO::with(['fe','ftds', 'clicks_impression'])->where('brand','bj88')->latest()->paginate(10);
+        $bo = BO::with(['fe','ftds', 'clicks_impression'])->where('brand','winrs')->latest()->paginate(10);
         // dd($bo);
-        $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','bj88')->distinct()->pluck('currency')->toArray();
-        // Replace 'USD' with 'KHR'
-        $completedTask = array_map(function($currency) {
-            return $currency === 'USD' ? 'KHR' : $currency;
-        }, $completedTask);
-
+        $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','winrs')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
         
-        return view('admin.pages.bj88', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        return view('admin.pages.winrs', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
 
-    
     //fetch the bo for bj88
-    public function bj88BO(Request $request){
+    public function winrsBO(Request $request){
         ini_set('max_execution_time', 1200); // Increase to 10 minutes
 
         // Call the currencyCollection method to get the array for the requested currency
@@ -57,8 +52,8 @@ class Bj88Controller extends Controller
             $response = Http::timeout(1200)->post($this->url, [
                 'email' => 'exousianavi',
                 'password' => 'DataAnalys2024',
-                'link' => 'https://www.1xoffer.com/page/manager/login.jsp',
-                'fe_link' => 'https://bajipartners.com/page/affiliate/login.jsp',
+                'link' => 'https://www.jeet.buzz/page/manager/login.jsp',
+                'fe_link' => 'https://jeetbuzzpartners.com/page/affiliate/login.jsp',
                 'currency' => $currencyData['index'],
                 'keyword' => $currencyData['keywords']
             ]);
@@ -83,7 +78,7 @@ class Bj88Controller extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'bj88'
+                                'brand' => 'jeetbuzz'
                             ]);
 
                             
@@ -96,7 +91,7 @@ class Bj88Controller extends Controller
                             $fe_response = Http::timeout(1200)->post($this->url_fe, [
                                 'username' => $value['Affiliate Username'],
                                 'password' => $accountData,
-                                'link' => 'https://bajipartners.com/page/affiliate/login.jsp',
+                                'link' => 'https://jeetbuzzpartners.com/page/affiliate/login.jsp',
                                 'currency' => $value['Currency'],
                             ]);
 
@@ -284,7 +279,7 @@ class Bj88Controller extends Controller
             ],
             'BDT' => [
                 'index' => '8',
-                'keywords' => ['richads', 'richadspush', 'onclicbdtpush', 'tforcepushbdt', 'aff009a2', 'adcash', 'trafficnombdt', 'adsterra', 'flatadbdt', 'adxadbdt', 'exoclick', 'propadsbdt', 'clickadu', 'hilltopads', 'trafforcebdt', 'admavenbdt']
+                'keywords' => ['jbrichads','jbadcash','jbtrafficnom','jbadsterrabdt','jbflatadbdt','jbclickadubdt','jbtrafficstars','jbhilltopads','jbtrafficshop','jbrichadpush']
             ],
             'VND' => [
                 'index' => '2',
@@ -304,7 +299,7 @@ class Bj88Controller extends Controller
             ],
             'PKR' => [
                 'index' => '17',
-                'keywords' => ['richadspkr', 'richadspkpush', 'daopkpush', 'trafficnompkr', 'adcashpkr', 'daoadpkr', 'trastarpkr'],
+                'keywords' => ['jbpkrichadpush'],
             ],
             'PHP' => [
                 'index' => '16',
@@ -326,6 +321,7 @@ class Bj88Controller extends Controller
                 'index' => '9',
                 'keywords' => ['keyword7', 'keyword8']
             ],
+            
 
         ];
 
@@ -336,29 +332,22 @@ class Bj88Controller extends Controller
     private function feAccountBaji($key)
     {
         $accounts = [
-            '88idriads' => 'A1b2c3',
-            '88idflatad' => 'A1b2c3',
-            '88idcadu' => 'A1b2c3',
-            '88idriadspush' => 'A1b2c3',
-            '88phpadsterra' => 'A1b2c3',
-            '88phtfnomads' => 'A1b2c3',
-            '88phtfstars' => 'A1b2c3',
-            '88phclickadu' => 'A1b2c3',
-            '88phflatad' => 'A1b2c3',
-            '88phadxad' => 'A1b2c3',
-            '88krhtopads' => 'A1b2c3',
-            '88krclickadu' => 'A1b2c3',
-            '88krtfnomads' => 'A1b2c3',
-            '88krpadsterra' => 'A1b2c3',
-            '88vnrichads' => 'affSystem0701',
-            '88vnhtopads' => 'affSystem0701',
-            '88vntfnmads' => 'affSystem0701',
-            '88vnflatad' => 'A1b2c3',
-            '88vnclickadu' => 'affSystem0701',
-            '88khdaopush' => 'A1b2c3',
-            '88phadxadpush' => 'A1b2c3',
-            '88vnrichadpush' => 'A1b2c3',
-            
+            'jbpkrichads' => 'qaz123',
+            'jbpkradcash' => 'qaz123',
+            'jbpkflatad' => 'qaz123',
+            'jbpktrfnmd' => 'qaz123',
+            'jbpktfshop' => 'qaz123',
+            'jbrichads' => 'qaz123',
+            'jbadcash' => 'qaz123',
+            'jbtrafficnom' => 'qaz123',
+            'jbadsterrabdt' => 'qaz123',
+            'jbflatadbdt' => 'qaz123',
+            'jbclickadubdt' => 'qaz123',
+            'jbtrafficstars' => 'qaz123',
+            'jbhilltopads' => 'qaz123',
+            'jbtrafficshop' => 'qaz123',
+            'jbrichadpush' => 'qaz123',
+            'jbpkrichadpush' => 'qaz123',
         ];
         return $accounts[$key];
     }

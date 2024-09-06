@@ -28,7 +28,11 @@ class BoAutomation:
             '5': 'KRW',
             '6': 'IDR',
             '24': 'NPR',
-            '9': 'THB'
+            '9': 'THB',
+            '25': 'CAD',
+            '11': 'HKD',
+            '1': 'MYR',
+            '4': 'SGD'
         }
     async def fill_login_form(self, page):
         try:
@@ -343,6 +347,10 @@ class BoAutomation:
             '6': 'IDR',
             '24': 'NPR',
             '9': 'THB',
+            '25': 'CAD',
+            '11': 'HKD',
+            '1': 'MYR',
+            '4': 'SGD'
         }
         header_selector = '#performanceAffiliateTable thead tr th'
         

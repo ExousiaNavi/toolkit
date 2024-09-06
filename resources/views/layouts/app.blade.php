@@ -24,6 +24,7 @@
     {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4/animate.min.css"> --}}
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="{{ asset('css/loader.css') }}">
     <style>
         /* Hide the default scrollbar */
         ::-webkit-scrollbar {
@@ -52,6 +53,12 @@
 </head>
 
 <body class="font-sans antialiased">
+
+    {{-- loader --}}
+   <div id="loader" class="hidden">
+        @include('admin.pages.loader.loader')
+   </div>
+
     <div class="min-h-screen bg-gray-100 overflow-x-hidden">
         @include('layouts.navigation')
 
@@ -67,6 +74,13 @@
     <script>
         $(document).ready(function() {
             console.log('connected...')
+            var loader = $('#loader');
+            loader.removeClass('hidden'); // Show the loader
+
+            setTimeout(() => {
+                loader.addClass('hidden')
+            }, 3000);
+
             // Get CSRF token from meta tag
             var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
