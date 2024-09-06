@@ -122,27 +122,30 @@
                     console.log(res)
                     if (stat) {
                         res.slice(1).forEach(r => {
-                            renderList += `
-                            <div class="flex gap-x-3">
-                                    <div class="w-16 text-end">
-                                        <span class="text-xs text-gray-500 dark:text-neutral-400">${r.time}</span>
-                                    </div>
-                                    <div class="relative last:after:hidden after:absolute after:top-7 after:bottom-0 after:start-3.5 after:w-px after:-translate-x-[0.5px] after:bg-gray-200 dark:after:bg-neutral-700">
-                                        <div class="relative z-10 size-7 flex justify-center items-center">
-                                            <div class="size-2 rounded-full bg-gray-400 dark:bg-neutral-600"></div>
+                            // Ensure 'r' is not null and contains the required properties ('time', 'text', 'keyword')
+                            if (r && r.time && r.text && r.keyword) {
+                                renderList += `
+                                <div class="flex gap-x-3">
+                                        <div class="w-16 text-end">
+                                            <span class="text-xs text-gray-500 dark:text-neutral-400">${r.time}</span>
+                                        </div>
+                                        <div class="relative last:after:hidden after:absolute after:top-7 after:bottom-0 after:start-3.5 after:w-px after:-translate-x-[0.5px] after:bg-gray-200 dark:after:bg-neutral-700">
+                                            <div class="relative z-10 size-7 flex justify-center items-center">
+                                                <div class="size-2 rounded-full bg-gray-400 dark:bg-neutral-600"></div>
+                                            </div>
+                                        </div>
+                                        <div class="pt-0.5 pb-4 text-start">
+                                            <h3 class="flex gap-x-1.5 font-semibold text-gray-800 dark:text-white">${r.text}</h3>
+                                            <button type="button" class="mt-1 -ms-1 p-1 inline-flex items-center gap-x-2 text-xs rounded-lg border border-transparent text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
+                                                <svg class="shrink-0 size-4 mt-0.5 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                                ${r.keyword}
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="pt-0.5 pb-4 text-start">
-                                        <h3 class="flex gap-x-1.5 font-semibold text-gray-800 dark:text-white">${r.text}</h3>
-                                        <button type="button" class="mt-1 -ms-1 p-1 inline-flex items-center gap-x-2 text-xs rounded-lg border border-transparent text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
-                                            <svg class="shrink-0 size-4 mt-0.5 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                            ${r.keyword}
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
+                                `;
+                            }
                         });
                     }
 
@@ -316,7 +319,7 @@
                 //merge report on spreedsheet
                 $('#bj88_automate_report').click(function(){
                     completedTime = ''
-                    asyncRequest(`/admin/spreedsheet`, 'POST',{'currency' : ''}, 'Connecting to Spreadsheet to transfer data')
+                    asyncRequest(`/admin/bj88/spreedsheet`, 'POST',{'currency' : ''}, 'Connecting to Spreadsheet to transfer data')
                         .then(function(response) {
                             console.log(response.result)
                             let result = response.result.data

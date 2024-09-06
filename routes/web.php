@@ -54,16 +54,22 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::get('/bj88', [Bj88Controller::class, 'index'])->name('bj88');
         //send request to fetch BO for bj88
         Route::post('bj88/bo',[Bj88Controller::class, 'bj88BO'])->name('bj88.bo');
+        //send to spreedsheet
+        Route::post('bj88/spreedsheet',[Bj88Controller::class, 'Spreedsheet'])->name('bj88.spreedsheet');
 
         //six6s
         Route::get('/six6s', [Six6SController::class, 'index'])->name('six6s');
          //send request to fetch BO for bj88
         Route::post('six6s/bo',[Six6SController::class, 'six6sBO'])->name('six6s.bo');
+        //send to spreedsheet
+        Route::post('six6s/spreedsheet',[Six6SController::class, 'Spreedsheet'])->name('six6s.spreedsheet');
 
         //jeetbuzz
         Route::get('/jeetbuzz', [JeetbuzzController::class, 'index'])->name('jeetbuzz');
          //send request to fetch BO for jeetbuzz
         Route::post('jeetbuzz/bo',[JeetbuzzController::class, 'jeetbuzzBO'])->name('jeetbuzz.bo');
+        //send to spreedsheet
+        Route::post('jeetbuzz/spreedsheet',[JeetbuzzController::class, 'Spreedsheet'])->name('jeetbuzz.spreedsheet');
 
         //jeetbuzz
         Route::get('/ic88', [Ic88Controller::class, 'index'])->name('ic88');

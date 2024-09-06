@@ -281,7 +281,7 @@ class BackendController extends Controller
         // dd('recieved..');
         $bos = BO::with(['fe','ftds','clicks_impression:b_o_s_id,creative_id,imprs,clicks,spending'])
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
-        ->where('is_merged',false)
+        ->where('is_merged',true)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();

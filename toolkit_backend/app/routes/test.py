@@ -69,6 +69,10 @@ async def automate_sheet(request: SpreedSheetRequest):
             keyword = item.get('keyword', None)  # Ensure keyword is fetched from the item
             if keyword == 'adcash':
                 keyword = 'Baji (adcash)'
+            if keyword == 'jbclickadubdt':
+                keyword = 'Baji (jbclickadubdt)'
+            if keyword == 'jbtrafficstars':
+                keyword = 'Baji (jbtrafficstars)'
             bo_data = item['bo']
             # nsu = item['nsu']
             # ftd = item['ftd']

@@ -266,6 +266,111 @@ class JeetbuzzController extends Controller
         }
     }
 
+    //automate spreedsheet report
+    public function Spreedsheet(){
+        ini_set('max_execution_time', 1200); // Increase to 10 minutes
+        $dataset = [];
+        // dd('recieved..');
+        $bos = BO::with(['fe','ftds','clicks_impression:b_o_s_id,creative_id,imprs,clicks,spending'])
+        ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
+        ->where('brand','jeetbuzz')
+        ->where('is_merged',true)
+        ->whereDate('created_at', Carbon::today())
+        ->latest()
+        ->get();
+        // dd($bos);
+
+        // $keys = ["adxadbdt","adcash","trafficnombdt","exoclick",  'trafnomnpop'];
+        // $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
+        foreach ($bos as $bo) {
+            // dd($bo->clicks_impression);
+            // dd($bo);
+            $info = $this->spreedsheetId($bo->affiliate_username);
+            // Initialize an array to store processed impression and click data
+            $impressions_data = [];
+
+            // commented just for now to make a BO functional
+            // if (!empty($bo->clicks_impression)) {
+            //     // Process each clicks_impression record and add keys
+            //     foreach ($bo->clicks_impression as $impression) {
+            //         if(in_array($impression->creative_id, $idToUsedKeywords)){
+            //             // dd($this->cKeys($impression->creative_id));
+            //             $impressions_data[] = [
+            //                 'b_o_s_id' => $impression->b_o_s_id,
+            //                 'creative_id' => $this->cKeys($impression->creative_id),
+            //                 'imprs' => $impression->imprs,
+            //                 'clicks' => $impression->clicks,
+            //                 'spending' => $impression->spending,
+            //                 // Add any additional keys you need
+            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+            //             ];
+            //         }else{
+                        
+            //             $impressions_data[] = [
+            //                 'b_o_s_id' => $impression->b_o_s_id,
+            //                 'creative_id' => $impression->creative_id,
+            //                 'imprs' => $impression->imprs,
+            //                 'clicks' => $impression->clicks,
+            //                 'spending' => $impression->spending,
+            //                 // Add any additional keys you need
+            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+            //             ];
+            //         }
+            //     }
+            // } else {
+            //     // Handle the case where $bo->clicks_impression is empty, if needed
+            //     Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
+            // }
+            
+
+            $dataset[] = [
+                'spreadsheet' => $info,
+                'keyword' => $bo->affiliate_username,
+                'bo' => [$bo->nsu, $bo->ftd, $bo->active_player, $bo->total_deposit, $bo->total_withdrawal, $bo->total_turnover, $bo->profit_and_loss, $bo->total_bonus],
+                'impression_and_clicks' => $impressions_data,
+            ];
+
+            Log::info('Inserting dataset : ', ["dataset" => $dataset]);
+        }
+        // dd($dataset);
+        $sp = Http::withOptions(['timeout'=>1200,'connect_timeout' => 1200,])->post($this->url_sp, [
+            'request_data' => $dataset,
+        ]);
+
+        if ($sp->successful()) {
+            $sdata = $sp->json();
+            $filteredData = array_slice($sdata['data'], 1);
+            // dd($filteredData);
+            // Filter out null values
+            $filteredData = array_filter($filteredData, function ($item) {
+                return !is_null($item);
+            });
+
+
+            foreach ($filteredData as $fd) {
+                if(isset($fd['status']) && $fd['status'] === 200){
+                    $bo = BO::where('affiliate_username', $fd['keyword'])
+                                ->whereDate('created_at', Carbon::today())  // Use whereDate to match only the date part of created_at
+                                ->latest()  // Get the most recent record
+                                ->first();  // Fetch the first record
+
+                    if($bo) {
+                        $bo->update(['is_merged' => true]);  // Update the is_merged column
+                        Log::info('BO successfully updated the is_merged column.', ['BO' => $bo]);
+                    } else {
+                        Log::warning('Not found, BO failed to update the is_merged column.', ['keyword' => $fd['keyword']]);
+                    }
+                }
+            }
+            return response()->json(['result' => $sdata]);
+        }else{
+            return response()->json(['error' => 'Failed to fetch FE data'], 500);
+        }
+        
+    }
+
     // private function for currency and associated keywords
     private function currencyCollection($curr)
     {
@@ -277,7 +382,7 @@ class JeetbuzzController extends Controller
             ],
             'BDT' => [
                 'index' => '8',
-                'keywords' => ['jbrichads','jbadcash','jbtrafficnom','jbadsterrabdt','jbflatadbdt','jbclickadubdt','jbtrafficstars','jbhilltopads','jbtrafficshop','jbrichadpush']
+                'keywords' => ['jbrichads','jbrichadpush','jbadcash','jbtrafficnom','jbadsterrabdt','jbflatadbdt','jbclickadubdt','jbtrafficstars','jbhilltopads','jbtrafficshop','jbpkrichads','jbpkradcash','jbpkflatad','jbpktrfnmd','jbpktfshop']
             ],
             'VND' => [
                 'index' => '2',
@@ -323,6 +428,80 @@ class JeetbuzzController extends Controller
         ];
 
         return $currencyType[$curr];
+    }
+
+    // private function for spreedsheet id
+    private function spreedsheetId($sid){
+        $sheet_id = [
+            'jbpkrichads' => [
+                'spreed_id' => '19ZWo8WuRcqamn7npyM-TXwRsMdgFINpVWTSzGQea-VA',
+                'platform' => 'Richads'
+            ],
+            'jbpkradcash' => [
+                'spreed_id' => '19ZWo8WuRcqamn7npyM-TXwRsMdgFINpVWTSzGQea-VA',
+                'platform' => 'Adcash'
+            ],
+            'jbpkflatad' => [
+                'spreed_id' => '19ZWo8WuRcqamn7npyM-TXwRsMdgFINpVWTSzGQea-VA',
+                'platform' => 'FlatAD'
+            ],
+            'jbpktrfnmd' => [
+                'spreed_id' => '19ZWo8WuRcqamn7npyM-TXwRsMdgFINpVWTSzGQea-VA',
+                'platform' => 'TrafficNomads'
+            ],
+            'jbpktfshop' => [
+                'spreed_id' => '19ZWo8WuRcqamn7npyM-TXwRsMdgFINpVWTSzGQea-VA',
+                'platform' => 'TrafficShop'
+            ],
+            'jbrichads' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'Richads'
+            ],
+            'jbadcash' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'Adcash'
+            ],
+            'jbtrafficnom' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'TrafficNomads'
+            ],
+            'jbadsterrabdt' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'Adsterra'
+            ],
+            'jbflatadbdt' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'FlatAD'
+            ],
+            'jbclickadubdt' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'ClickAdu'
+            ],
+            'jbtrafficstars' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'TrafficStars'
+            ],
+            'jbhilltopads' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'HilltopAds'
+            ],
+            'jbtrafficshop' => [
+                'spreed_id' => '1DqejBOBiTgfqy7bW9gBkjgs_a0L1oAuz06a6UA5xzuk',
+                'platform' => 'TrafficShop'
+            ],
+            'jbrichadpush' => [
+                'spreed_id' => '17U_oquEI4PASj_Fy7hTi45di7BZ5mmHcMb7dp-LnJf0',
+                'platform' => 'Richads'
+            ],
+            'jbpkrichadpush' => [
+                'spreed_id' => '1hfGfbyi4d2c0qwwQ9NrhzQ1htByBCtgjEIjFXLxGfrs',
+                'platform' => 'Richads'
+            ],  
+            
+            
+        ];
+
+        return $sheet_id[$sid];
     }
 
     //fe accounts for baji
