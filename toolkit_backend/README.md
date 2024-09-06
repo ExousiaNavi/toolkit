@@ -15,7 +15,7 @@ This project automates data fetching from various platforms using FastAPI and Py
 
 3. pip install -r requirements.txt
 
-4. uvicorn app.main:app --host 127.0.0.1 --port 8081
+4. uvicorn app.main:app --host 127.0.0.1 --port 8082
 
 
 toolkit_backend/

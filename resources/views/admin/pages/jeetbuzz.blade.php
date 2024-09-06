@@ -5,11 +5,17 @@
 
             <div class="flex justify-between items-center p-2 font-bold text-slate-600">
                 <div>
-                    <h1 class="text-xl capitalize">Welcome to BAJI report, {{ Auth::user()->name }}</h1>
+                    <h1 class="text-xl capitalize">Welcome to Jeetbuzz report, {{ Auth::user()->name }}</h1>
                     <span class="text-sm">This is the available currency for automation.</span>
                 </div>
                 <div>
-                    <a id="baji_automate_report" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                    <a id="jeetbuzz_automate" class="jeetbuzz_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                        href="#">
+                        <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
+                            <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
+                        Automate All
+                    </a>
+                    <a id="jeetbuzz_automate_report" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                         href="#">
                         <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
                             <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
@@ -43,18 +49,18 @@
                                 <span class="font-bold text-slate-700">{{ $currency->currency }} - Currency</span>
                                 
                                 @if (in_array($currency->currency, $completedTask))
-                                    <a data-c_type="{{ $currency->currency }}" class="bj_automate_completed py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                    <a data-c_type="{{ $currency->currency }}" class="jeetbuzz_automate_completed py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-50 text-green-500 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                                         >
-                                        <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
+                                        <svg class="shrink-0 size-4 text-green-500" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
                                             <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
                                         Completed
                                     </a>
                                 @else   
-                                    <a data-c_type="{{ $currency->currency }}" class="bj_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                                    <a data-c_type="{{ $currency->currency }}" class="jeetbuzz_automate_debug py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-orange-100 text-orange-600 hover:bg-orange-200 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                                         >
-                                        <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
+                                        <svg class="shrink-0 size-4 text-orange-300" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
                                             <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
-                                        Automate
+                                        Pending
                                     </a>
                                 @endif
                                 
@@ -68,16 +74,14 @@
             </div>
             <div class="border">
                 {{-- {{ $username }} --}}
-                @include('admin.pages.tables.baji_table', ['bos'=>$bo, 'usernames'=>$username, 'platforms'=>$platforms])
+                @include('admin.pages.tables.jeetbuzz_table', ['bos'=>$bo, 'usernames'=>$username, 'platforms'=>$platforms])
             </div>
         </div>
     </div>
 
-    {{-- modals collection --}}
-    {{-- @include('admin.pages.modals.add_currency') --}}
     @section('scripts')
         <script>
-            console.log('connected baji...')
+            console.log('connected jeetbuzz...')
             $(document).ready(function(){
                 // Get CSRF token from meta tag
                 let csrfToken = $('meta[name="csrf-token"]').attr('content');
@@ -100,14 +104,14 @@
                                             html: renderHtml,
                                             icon: icon,
                                             showCancelButton: false,  // Optional: If you want to show a cancel button
-                                            confirmButtonText: 'Confirm',
+                                            // confirmButtonText: 'Confirm',
                                             allowOutsideClick: false,  // Prevent closing when clicking outside
-                                            preConfirm: () => {
-                                                // Code to execute when the confirm button is clicked
-                                                console.log('Confirm button clicked');
-                                                // Perform any action here
-                                                window.location.reload()
-                                            }
+                                            // preConfirm: () => {
+                                            //     // Code to execute when the confirm button is clicked
+                                            //     console.log('Confirm button clicked');
+                                            //     // Perform any action here
+                                            //     window.location.reload()
+                                            // }
                                         });
                     }
                     
@@ -153,27 +157,15 @@
                             html: renderHtml,
                             icon: icon,
                             showCancelButton: false,
-                            confirmButtonText: 'Confirm',
+                            // confirmButtonText: 'Confirm',
                             allowOutsideClick: false,
-                            preConfirm: () => {
-                                console.log('Confirm button clicked');
-                                window.location.reload();
-                            }
+                            // preConfirm: () => {
+                            //     console.log('Confirm button clicked');
+                            //     window.location.reload();
+                            // }
                         });
                     }
                 }
-                // popup2('success', 'Test Title', 'Hello world...', 'success', [
-                //     { time: '12:05 PM', task: 'Created "Preline in React" task', user: 'James Collins' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                //     { time: '12:10 PM', task: 'Release v5.2.0 quick bug fix 🐞', user: 'Alex Gregarov' },
-                // ], true);
 
                 //loader 
                 const loader = (htmls) => {
@@ -262,7 +254,7 @@
                     var filterQuery = $(this).data('name').toLowerCase();
 
                     if (filterQuery != 'all') {
-                        $('#baji_table tbody tr').each(function() {
+                        $('#jeetbuzz_table tbody tr').each(function() {
                             var rowText = $(this).text().toLowerCase();
                             if (rowText.indexOf(filterQuery) > -1) {
                                 $(this).show();  // Show the row if it matches the filter
@@ -272,48 +264,57 @@
                         });
                     } else {
                         // Show all rows if 'all' is selected
-                        $('#baji_table tbody tr').show();
+                        $('#jeetbuzz_table tbody tr').show();
                     }
                 });
 
 
                 //searching
                 // searh on table by ip
-                $('#baji_search').on('input', function() {
+                $('#jeetbuzz_search').on('input', function() {
                     var searchQuery = $(this).val().toLowerCase();
 
-                    $('#baji_table tbody tr').filter(function() {
+                    $('#jeetbuzz_table tbody tr').filter(function() {
                         $(this).toggle($(this).text().toLowerCase().indexOf(searchQuery) > -1);
                     });
                 });
             
                 // test for automating btd
-                $('.bj_automate').click(function(){
-                    let currency = $(this).data('c_type')
-                    completedTime = ''
-                    asyncRequest(`/admin/bdt-bo`, 'POST',{'currency' : currency}, 'Connecting to BO and FE platform to fetch data')
-                        .then(function(response) {
-                            // if(!response.result.status){
-                            //     console.error('Error:', response.result.error);
-                            // }
-                            console.log(response.result)
-                            let result = response.result.data
-                            popup(result.status, result.title, result.text, result.icon, completedTime)
-                        })
-                        .catch(async function(error) {
-                            console.error('Error:', error.error.result);
-                            if(!error.error.result.success){
-                                popup("error", "Connection Problem.", error.error.result.error, 'error', completedTime)
+                $('.jeetbuzz_automate').click(async function() {
+                    // Array of currencies
+                    let currencies = ['BDT', 'PKR'];
+
+                    for (const currency of currencies) {
+                        try {
+                            completedTime = '';
+                            
+                            // Await the async request
+                            let response = await asyncRequest(`/admin/jeetbuzz/bo`, 'POST', { 'currency': currency }, `Connecting to BO and FE platform to fetch data for ${currency}`);
+                            
+                            // Handle success response
+                            let result = response.result.data;
+                            popup(result.status, result.title, result.text, result.icon, completedTime);
+                            console.log(`Successfully processed: ${currency}`);
+                            
+                            // Wait for 3 seconds before closing the popup and moving to the next request
+                            await new Promise(resolve => setTimeout(resolve, 5000));  // 3 second delay
+                            
+                        } catch (error) {
+                            // Handle error response
+                            console.error(`Error processing ${currency}:`, error.error.result);
+                            if (!error.error.result.success) {
+                                popup("error", "Connection Problem.", error.error.result.error, 'error', completedTime);
+                                
+                                // Wait for 3 seconds after the error popup before moving to the next request
+                                await new Promise(resolve => setTimeout(resolve, 5000));  // 3 second delay
                             }
-                        });
-                })
+                        }
+                    }
+                });
+
 
                 //merge report on spreedsheet
-                $('#baji_automate_report').click(function(){
-                    // const swalInstance = loader(`<div class="bg-slate-100 p-1 flex flex-col gap-2">
-                    //                 <span class="text-green-500">Connecting to Google Spreedsheet...</span>
-                    //                 <span class="text-slate-500"><b></b></span>
-                    //             </div>`);
+                $('#jeetbuzz_automate_report').click(function(){
                     completedTime = ''
                     asyncRequest(`/admin/spreedsheet`, 'POST',{'currency' : ''}, 'Connecting to Spreadsheet to transfer data')
                         .then(function(response) {
@@ -326,45 +327,22 @@
                         });
                 })
                 // trigger add brand modal
-                $('#baji_add_currency').click(function(){
-                    // alert('yes')
-                    $('#add_currency').trigger('click')
-                })
+                // $('#baji_add_currency').click(function(){
+                //     // alert('yes')
+                //     $('#add_currency').trigger('click')
+                // })
 
                 // trigger completed task button
-                $('.bj_automate_completed').click(function(){
+                $('.jeetbuzz_automate_completed').click(function(){
                     let c = $(this).data('c_type')
                     popup('completed', `${c} Completed.`, 'Automation is already been completed, available again tomorrow.', 'info', '')
                 })
 
-                //debugging section
-                // $('#add_currency').trigger('click')
-
-                //if any status is made
-                // console.log(responseAction.status != undefined)
                 if(responseAction.status != undefined){
                     popup(responseAction.status, responseAction.title, responseAction.text, responseAction.icon, '')
                 }
                 
-                //commented for now
-                // Connecting Request to a server
-                // asyncRequest('http://127.0.0.1:8081/', 'GET','')
-                //     .then(function(response) {
-                //         // console.log(response)
-                //         popup(response.status, response.title, response.text, response.icon, '')
-                //     })
-                //     .catch(function(error) {
-                //         console.error('Error:', error);
-                //     });
 
-                // asyncRequest('https://www.1xoffer.com/manager/AffiliateController/searchPerformancePlayerReport?resultBy=&visibleColumns=&currencyType=8&searchStatus=-99&userId=richads&affiliateInternalType=-1&searchTimeStart=2024%2F08%2F13&searchTimeEnd=2024%2F08%2F20&pageNumber=1&pageSize=10&sortCondition=14&sortName=turnover&sortOrder=1&searchText=', 'GET','')
-                //     .then(function(response) {
-                //         console.log(response)
-                       
-                //     })
-                //     .catch(function(error) {
-                //         console.error('Error:', error);
-                //     });
             })
         </script>
     @endsection

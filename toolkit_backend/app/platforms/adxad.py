@@ -110,6 +110,7 @@ class AdxadScraper:
 
                 finally:
                     if 'browser' in locals():  # Ensure browser is defined
+                        await context.close()
                         await browser.close()
 
     async def filter_data(self, raw_data):

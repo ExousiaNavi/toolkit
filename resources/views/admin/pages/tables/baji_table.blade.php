@@ -17,7 +17,7 @@
                                 Automation Result
                             </h2>
                             <p class="text-sm text-gray-600 dark:text-neutral-400">
-                                Result for automating the BO report's .
+                                Result for automating the <span class="font-bold">BO</span>, <span class="font-bold">FE</span>, <span class="font-bold">Impressions</span> and <span class="font-bold">Clicks</span> report's .
                             </p>
                         </div>
 
@@ -52,9 +52,7 @@
                                     <div class="relative">
                                       <input type="text" id="baji_search" name="baji_search" class="py-3 px-4 ps-11 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="Search...">
                                       <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4">
-                                        <div class="animate-spin inline-block size-4 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" role="status" aria-label="loading">
-                                          <span class="sr-only">Loading...</span>
-                                        </div>
+                                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
                                       </div>
                                     </div>
                                 </div>
@@ -741,13 +739,13 @@
                             $displayedItems = [];
                         @endphp
                         @foreach ($platforms as $p)
-                            <div class="bg-green-600 p-1 rounded-md text-white flex gap-1 items-center text-sm">
+                            <a href="{{ $p['link'] }}" class="bg-green-600 p-1 rounded-md text-white flex gap-1 items-center text-sm hover:cursor-pointer hover:scale-105 transform transition-transform duration-300">
                                 <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"  viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zm0 66.8l0 378.1C394 378 431.1 230.1 432 141.4L256 66.8s0 0 0 0z"/></svg>
                                 
                                 <span class="">
                                     {{ $p['platform'] }}
                                 </span>
-                            </div>
+                            </a>
                             
                         @endforeach
                        

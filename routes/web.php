@@ -5,9 +5,14 @@ use App\Http\Controllers\AsyncRequestController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\BajiController;
+use App\Http\Controllers\Bj88Controller;
+use App\Http\Controllers\JeetbuzzController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Six6SController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+
 
 
 
@@ -31,13 +36,29 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
         // Baji Contoller
         Route::get('/baji', [BajiController::class, 'index'])->name('baji');
-        Route::post('/baji/currency', [BajiController::class, 'createCurrency'])->name('baji.create.currency');
+        // Route::post('/baji/currency', [BajiController::class, 'createCurrency'])->name('baji.create.currency');
 
         //send test rquest to backend
         Route::post('/bdt-bo',[BackendController::class, 'BdtBOFetcher'])->name('bo');
+        //send to spreedsheet
         Route::post('/spreedsheet',[BackendController::class, 'Spreedsheet'])->name('spreedsheet');
         //async request
         Route::get('/total-request', [AsyncRequestController::class, 'totalRequestAccount'])->name('request.account.count');
+
+        //bj88
+        Route::get('/bj88', [Bj88Controller::class, 'index'])->name('bj88');
+        //send request to fetch BO for bj88
+        Route::post('bj88/bo',[Bj88Controller::class, 'bj88BO'])->name('bj88.bo');
+
+        //six6s
+        Route::get('/six6s', [Six6SController::class, 'index'])->name('six6s');
+         //send request to fetch BO for bj88
+        Route::post('six6s/bo',[Six6SController::class, 'six6sBO'])->name('six6s.bo');
+
+        //jeetbuzz
+        Route::get('/jeetbuzz', [JeetbuzzController::class, 'index'])->name('jeetbuzz');
+         //send request to fetch BO for jeetbuzz
+        Route::post('jeetbuzz/bo',[JeetbuzzController::class, 'jeetbuzzBO'])->name('jeetbuzz.bo');
     });
 
     // User Routes

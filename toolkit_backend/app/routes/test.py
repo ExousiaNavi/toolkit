@@ -44,6 +44,7 @@ async def fetch_fe_data(request: ClicksAndImpressionRequest):
     
     try:
         data = await click_test.fetch_info()
+        print(f"Data: {data}")
         # data = await test.fetch_data()
         return {"data": data}
     except Exception as e:
@@ -66,12 +67,17 @@ async def automate_sheet(request: SpreedSheetRequest):
             spreed_id = spreadsheet_info['spreed_id']
             platform = spreadsheet_info['platform']
             keyword = item.get('keyword', None)  # Ensure keyword is fetched from the item
+            if keyword == 'adcash':
+                keyword = 'Baji (adcash)'
             bo_data = item['bo']
+            # nsu = item['nsu']
+            # ftd = item['ftd']
 
             # Initialize the GoogleSheetsManager for the general bo_data processing
             gmanager = GoogleSheetsManager(
                 'keys.json',
                 ["https://www.googleapis.com/auth/spreadsheets"],
+                # for BO only
                 spreed_id, platform, bo_data, keyword
             )
             data = await gmanager.run()  # Await the asynchronous run method
@@ -91,17 +97,20 @@ async def automate_sheet(request: SpreedSheetRequest):
                         imprs = record.get('imprs')
                         clicks = record.get('clicks')
                         spending = record.get('spending')
+                        nsu = record.get('nsu')
+                        ftd = record.get('ftd')
 
                         # Use the spreed_id and platform from the outer scope
                         gmanager = GoogleSheetsManager(
                             'keys.json',
                             ["https://www.googleapis.com/auth/spreadsheets"],
-                            spreed_id, platform, [spending, imprs, clicks, bo_data[0], bo_data[1]], creative_id
+                            #for cost, impressions, clicks
+                            spreed_id, platform, [spending, imprs, clicks, nsu, ftd], creative_id
                         )
                         data = await gmanager.run()  # Await the asynchronous run method
                         results.append(data)
 
-                        print(f"b_o_s_id: {b_o_s_id}, creative_id: {creative_id}, imprs: {imprs}, clicks: {clicks}, spending: {spending}")
+                        print(f"b_o_s_id: {b_o_s_id}, creative_id: {creative_id}, imprs: {imprs}, clicks: {clicks}, spending: {spending}, nsu: {nsu}, ftd: {ftd}")
 
                 else:
                     print("Impression and Clicks list is empty.")

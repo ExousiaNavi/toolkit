@@ -11,6 +11,10 @@ import asyncio
 from app.platforms.adcash import AdcashScraper
 from app.platforms.adxad import AdxadScraper
 from app.platforms.trafficstars import TrafficStarsAutomation
+from app.platforms.traffinomads import TrafficNomadsAutomation
+from app.platforms.exoclick import ExoclickAutomation
+from app.platforms.richads import RichadsAutomation
+from app.platforms.daoad import DaoadAutomation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,6 +49,14 @@ class ClickAutomation:
                 scraper = AdxadScraper(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
             elif self.platform == 'trafficstars':
                 scraper = TrafficStarsAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+            elif self.platform == 'trafficnomads':
+                scraper = TrafficNomadsAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+            elif self.platform == 'exoclick':
+                scraper = ExoclickAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+            elif self.platform == 'richads':
+                scraper = RichadsAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+            elif self.platform == 'daoad':
+                scraper = DaoadAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
 
             # Ensure scraper was initialized before trying to use it
             if scraper:

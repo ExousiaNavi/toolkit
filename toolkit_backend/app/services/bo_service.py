@@ -17,7 +17,19 @@ class BoAutomation:
         self.currency = currency
         self.max_retries = max_retries
         self.session = None  # Session management for authenticated requests
-
+        self._currency_type = {
+            '-1': 'all',
+            '8': 'BDT',
+            '2': 'VND',
+            '15': 'USD',
+            '7': 'INR',
+            '17': 'PKR',
+            '16': 'PHP',
+            '5': 'KRW',
+            '6': 'IDR',
+            '24': 'NPR',
+            '9': 'THB'
+        }
     async def fill_login_form(self, page):
         try:
             await page.fill('input[name="username"]', self.email)
@@ -420,7 +432,7 @@ class BoAutomation:
                     data = {
                         "status": 200,
                         "text": "Automation for BO and FE data has been collected...",
-                        "title": "Automation Completed!",
+                        "title": f"Automation Completed: {self._currency_type.get(self.currency, None)}!",
                         "icon": "success",
                         "bo": table_data,
                     }

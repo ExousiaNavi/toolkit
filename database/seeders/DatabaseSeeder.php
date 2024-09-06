@@ -42,32 +42,25 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // $affiliates = [
-        //     'richads' => 'Richads',
-        //     'richadspkr' => 'Richads',
-        //     'richadspkpush' => 'Richads',
-        //     'aff009a2' => 'TrafficStars',
-        //     'trastarpkr' => 'TrafficStars',
-        //     'adcash' => 'Adcash',
-        //     'adcashpkr' => 'Adcash',
-        //     'trafficnombdt' => 'TrafficNomads',
-        //     'trafficnompkr' => 'TrafficNomads',
-        //     'trafnomnpop' => 'TrafficNomads',
-        //     'adsterra' => 'Adsterra',
-        //     'flatadbdt' => 'FlatAd',
-        //     'adxadbdt' => 'ADxAD',
-        //     'exoclick' => 'Exoclick',
-        //     'propadsbdt' => 'PropellerAds',
-        //     'clickadu' => 'ClickAdu',
-        //     'hilltopads' => 'HilltopAds',
-        //     'trafforcebdt' => 'Trafficforce',
-        //     'admavenbdt' => 'AdMaven',
-        //     'daopkpush' => 'DaoAD',
-        //     'daoadpkr' => 'DaoAD',
-        //     'daonppop' => 'DaoAD',
-        // ];
-        $platforms = ['Richads','TrafficStars','Adcash','TrafficNomads','Adsterra','FlatAd','ADxAD','Exoclick','PropellerAds','ClickAdu','HilltopAds','Trafficforce','AdMaven','DaoAD','Onclicka',
+        // $platforms = ['Richads','TrafficStars','Adcash','TrafficNomads','Adsterra','FlatAd','ADxAD','Exoclick','PropellerAds','ClickAdu','HilltopAds','Trafficforce','AdMaven','DaoAD','Onclicka'];
+        $platforms = [
+            'Richads' => 'http://richads.com/',
+            'TrafficStars' => 'https://admin.trafficstars.com/',
+            'Adcash' => 'https://adcash.com/',
+            'TrafficNomads' => 'https://partners.trafficnomads.com/',
+            'Adsterra' => 'https://partners.adsterra.com/login/?_ga=2.180619045.340336149.1687748770-40631359.1687748770',
+            'FlatAd' => 'https://dsp.mobshark.net/login',  // Replace with actual URL
+            'ADxAD' => 'https://td.adxad.com/auth/login?lang=en',    // Replace with actual URL
+            'Exoclick' => 'https://admin.exoclick.com/',
+            'PropellerAds' => 'https://partners.propellerads.com/#/auth',
+            'ClickAdu' => 'https://www.clickadu.com/',  // Replace with actual URL
+            'HilltopAds' => 'https://hilltopads.com/',  // Replace with actual URL
+            'Trafficforce' => 'https://dashboard.trafficforce.com/guest/login',
+            'AdMaven' => 'https://panel.ad-maven.com/advertiser/login?source_id=admaven_site_menu_2',
+            'DaoAD' => 'https://dao.ad/en#start',    // Replace with actual URL
+            'Onclicka' => 'https://app.onclicka.com/login/?ref=r2L1cv&_gl=1%2a1s7bhyo%2a_ga%2aMTQ3NTE3MTQzOC4xNzEzMTUwNjgy%2a_ga_Z2FPTLYR0L%2aMTcxMzE1MDY4Mi4xLjAuMTcxMzE1MDY4Mi42MC4wLjA.%2a_gcl_au%2aMTMwNDk1MjYyMi4xNzEzMTUwNjgy&_ga=2.125050242.921523895.1713150685-1475171438.1713150682'    // Replace with actual URL
         ];
+
         $affiliateKeys = [
             'richads' => 1,
             'richadspush'=>1,
@@ -96,8 +89,8 @@ class DatabaseSeeder extends Seeder
             'onclicbdtpush' => 15,
         ];
 
-        foreach ($platforms as $p) {
-            Platform::create(['platform' => $p]);
+        foreach ($platforms as $key => $p) {
+            Platform::create(['platform' => $key, 'link' => $p]);
         }
 
         foreach ($affiliateKeys as $key => $value) {
@@ -107,12 +100,17 @@ class DatabaseSeeder extends Seeder
 
         #creating brand and currency
 
-        Brand::factory()->create([
-            'brand' => 'baji',
-            'status' => 1,
-        ]);
+        $brands= ['baji','bj88','six6s','jeetbuzz'];
+
+        for ($i=0; $i < 4; $i++) { 
+            Brand::factory()->create([
+                'brand' => $brands[$i],
+                'status' => 1,
+            ]);
+        }
 
         $currencies = [
+            //BAJI
             [
                 'brand_id' => 1,
                 'currency' => 'BDT',
@@ -130,6 +128,72 @@ class DatabaseSeeder extends Seeder
             [
                 'brand_id' => 1,
                 'currency' => 'NPR',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            //BJ88
+            [
+                'brand_id' => 2,
+                'currency' => 'IDR',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 2,
+                'currency' => 'PHP',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 2,
+                'currency' => 'KRW',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 2,
+                'currency' => 'VND',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 2,
+                'currency' => 'KHR',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            //SIX6s
+            [
+                'brand_id' => 3,
+                'currency' => 'BDT',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 3,
+                'currency' => 'PKR',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            //JETTBUZZ
+            [
+                'brand_id' => 4,
+                'currency' => 'BDT',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
+                'email' => 'test@email.com',
+                'password' => 'password'
+            ],
+            [
+                'brand_id' => 4,
+                'currency' => 'PKR',
                 'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
                 'email' => 'test@email.com',
                 'password' => 'password'

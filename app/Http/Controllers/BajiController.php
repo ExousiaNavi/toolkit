@@ -17,10 +17,11 @@ class BajiController extends Controller
     public function index(){
         $username = BO::whereDate('created_at', Carbon::today())->pluck('affiliate_username')->toArray();
         // dd($username);
-        $currencies = Currency::get();
-        $bo = BO::with(['fe','ftds', 'clicks_impression'])->whereDate('created_at', Carbon::today())->latest()->paginate(10);
+        $currencies = Currency::where('brand_id', 1)->get();
+        // $bo = BO::with(['fe','ftds', 'clicks_impression'])->whereDate('created_at', Carbon::today())->latest()->paginate(10);
+        $bo = BO::with(['fe','ftds', 'clicks_impression'])->where('brand','baji')->latest()->paginate(10);
         // dd($bo);
-        $completedTask = BO::whereDate('created_at', Carbon::today())->distinct()->pluck('currency')->toArray();
+        $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','baji')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
         // dd($platforms);
         // dd($affiliates);

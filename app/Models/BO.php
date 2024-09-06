@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BO extends Model
 {
     use HasFactory;
-    protected $fillable = ['affiliate_username','currency','nsu','ftd','active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus', 'target_date', 'is_merged'];
+    protected $fillable = ['affiliate_username','currency','nsu','ftd','active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus', 'target_date', 'is_merged', 'brand'];
 
     public function fe() :HasMany{
         return $this->hasMany(FE::class, 'b_o_s_id');

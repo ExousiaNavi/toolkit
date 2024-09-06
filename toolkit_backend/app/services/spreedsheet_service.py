@@ -32,9 +32,9 @@ class GoogleSheetsManager:
         """Find the row index of yesterday's date."""
         # yesterday_date = datetime.now().date()
         yesterday_date = (datetime.now().date() - timedelta(days=1))
-        formatted_date = yesterday_date.strftime("%B %d")
-        yesterday_date_no_zero = yesterday_date.strftime("%m/%d/%Y")
-
+        formatted_date = yesterday_date.strftime("%B %#d")
+        yesterday_date_no_zero = yesterday_date.strftime("%#m/%#d/%Y")
+        print(f"data: {yesterday_date_no_zero}, {formatted_date}")
         yesterdays_date_row_index = None
         for row_index, row in enumerate(values):
             if row and len(row) > 0:

@@ -88,6 +88,7 @@ class AdcashScraper:
             except Exception as e:
                 logging.error(f"[ERROR] An unexpected error occurred: {e}")
             finally:
+                await context.close()
                 await browser.close()
                 
             await asyncio.sleep(5)

@@ -11,7 +11,7 @@ class Platform extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['platform'];
+    protected $fillable = ['platform','link'];
 
     public function platformKeys() :HasMany{
         return $this->hasMany(PlatformKey::class);
