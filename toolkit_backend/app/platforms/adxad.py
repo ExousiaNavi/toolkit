@@ -98,7 +98,7 @@ class AdxadScraper:
                     campaign_data = await self.fetch_campaign_data(token)
                     filtered_data = await self.filter_data(campaign_data['data'])
                     logging.info(filtered_data)
-
+                    return filtered_data
                     break  # Exit the loop if everything was successful
 
                 except Exception as e:

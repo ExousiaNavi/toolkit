@@ -79,7 +79,7 @@
 
             setTimeout(() => {
                 loader.addClass('hidden')
-            }, 3000);
+            }, 2000);
 
             // Get CSRF token from meta tag
             var csrfToken = $('meta[name="csrf-token"]').attr('content');

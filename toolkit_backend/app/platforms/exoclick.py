@@ -64,14 +64,21 @@ class ExoclickAutomation:
                         return {"status": 400, "text": "Failed to click report button."}
                     await page.wait_for_load_state('load')
                 
-                    if not await self.scrapping(page):
+                    # if not await self.scrapping(page):
+                    #     return {"status": 400, "text": "Failed to set yesterday's date."}
+                    scrapped_data = await self.scrapping(page)
+                    if not scrapped_data:
+                        # If the scrapping fails, return a custom error response
                         return {"status": 400, "text": "Failed to set yesterday's date."}
+                    
                     await page.wait_for_load_state('load')
                     await asyncio.sleep(5)
 
                     state = await context.storage_state()
                     Path(self.session_file_path).write_text(json.dumps(state))
                     logging.info("Session saved.")
+                    
+                    return scrapped_data
                     break  # Exit the loop if successful
                 
                 except Exception as e:

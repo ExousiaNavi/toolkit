@@ -165,30 +165,73 @@ class TrafficStarsAutomation:
             try:
                 await self.page.wait_for_load_state('networkidle')
                 await asyncio.sleep(5)  # Optional: Adding a short delay to ensure the table is fully loaded
-                await self.page.wait_for_selector('table.table.table-advance.campaign-advertisers-table.dataTable.no-footer')
+                # await self.page.wait_for_selector('table.table.table-advance.campaign-advertisers-table.dataTable.no-footer')
                 
 
-                table = await self.page.query_selector('table.table.table-advance.campaign-advertisers-table.dataTable.no-footer')
-                header_texts = await self.extract_table_headers(table)
+                # table = await self.page.query_selector('table.table.table-advance.campaign-advertisers-table.dataTable.no-footer')
+                # header_texts = await self.extract_table_headers(table)
+                # Select the first tbody from the table
+                tbody_selector = '#dynamic-table_None tbody:first-of-type'
+                 # Wait for the first tbody to be loaded and visible
+                await self.page.wait_for_selector(tbody_selector)
+                
+                # Get all the rows (tr elements) inside the first tbody
+                rows = await self.page.query_selector_all(f'{tbody_selector} tr')
 
-                id_index = header_texts.index("ID")
-                impressions_index = header_texts.index("IMPRS")
-                clicks_index = header_texts.index("CLICKS")
-                costs_index = header_texts.index("COSTS (USD)")
+                # Loop through each row in the first tbody
+                for index, row in enumerate(rows):
+                    # Get all the td elements in the current row
+                    tds = await row.query_selector_all('td')
 
-                rows = await table.query_selector_all('tbody:first-of-type tr')
+                    # Log the number of columns in the row for debugging
+                    print(f"Row {index + 1} has {len(tds)} columns")
 
-                for row in rows:
-                    c_id, impression, clicks, spending = await self.extract_row_data(row, id_index, impressions_index, clicks_index, costs_index)
-                    print(c_id, impression, clicks, spending)
-                    if c_id == ci:
-                        data = {
-                            'creative_id': ci,
-                            'Impressions': impression,
-                            'Clicks': clicks,
-                            'Spending': spending
-                        }
-                        return data
+                    # Check if the row has enough columns (at least 14)
+                    if len(tds) >= 14:
+                        # Get the specific td elements for columns 2, 7, 9, and 14
+                        Cid = await row.eval_on_selector('td:nth-child(2)', 'el => el.innerText.trim()')
+                        Imperssions = await row.eval_on_selector('td:nth-child(7)', 'el => el.innerText.trim()')
+                        Clicks = await row.eval_on_selector('td:nth-child(9)', 'el => el.innerText.trim()')
+                        Cost = await row.eval_on_selector('td:nth-child(14)', 'el => el.innerText.trim()')
+                        # Print or process the extracted data
+                        print(f"Column 2: {Cid}, Column 7: {Imperssions}, Column 9: {Clicks}, Column 14: {Cost}")
+                        if Cid == ci:
+                            data = {
+                             'creative_id': ci,
+                             'Impressions': Imperssions,
+                             'Clicks': Clicks,
+                             'Spending': Cost
+                            }
+                            return data
+                    else:
+                        print(f"Row {index + 1} does not have enough columns. Skipping this row.")
+                
+                # If no match is found, return default values
+                print(f"Creative ID '{ci}' not found. Returning default values.")
+                return {
+                    'creative_id': ci,
+                    'Impressions': '0',
+                    'Clicks': '0',
+                    'Spending': '0'
+                }
+                # id_index = header_texts.index("ID")
+                # impressions_index = header_texts.index("IMPRS")
+                # clicks_index = header_texts.index("CLICKS")
+                # costs_index = header_texts.index("COSTS (USD)")
+
+                # rows = await table.query_selector_all('tbody:first-of-type tr')
+
+                # for row in rows:
+                #     c_id, impression, clicks, spending = await self.extract_row_data(row, id_index, impressions_index, clicks_index, costs_index)
+                #     print(c_id, impression, clicks, spending)
+                #     if c_id == ci:
+                #         data = {
+                #             'creative_id': ci,
+                #             'Impressions': impression,
+                #             'Clicks': clicks,
+                #             'Spending': spending
+                #         }
+                #         return data
 
             except Exception as e:
                 retry_count += 1
@@ -201,6 +244,7 @@ class TrafficStarsAutomation:
                         'Clicks': '0',
                         'Spending': '0'
                     }
+                
 
             finally:
                 logging.info(f"Task attempt {retry_count} completed for CID '{ci}'.")

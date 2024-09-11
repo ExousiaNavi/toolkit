@@ -19,9 +19,6 @@ class CurrencyFactory extends Factory
         return [
             'brand_id' => 1,
             'currency' => "BDT",
-            'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-            'email' => 'test@email.com',
-            'password' => 'password'
         ];
     }
 }

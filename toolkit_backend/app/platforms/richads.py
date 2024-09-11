@@ -239,7 +239,7 @@ class RichadsAutomation:
                     clicks = (await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[2]/div[1]/div/table/tbody/tr[3]/td[11]').text_content()).strip()
                     spending = (await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[2]/div[1]/div/table/tbody/tr[3]/td[21]').text_content()).strip()
 
-                    await page.screenshot(path=f"richads_{cid}.png", full_page=True)
+                    # await page.screenshot(path=f"richads_{cid}.png", full_page=True)
                     await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[1]/div/span/div/div[1]/div[2]/div/div[1]/div/a').click()
                     await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[1]/div/span/div/div[1]/div[2]/div/div[1]/div/a').click()
                     print('click twice...')

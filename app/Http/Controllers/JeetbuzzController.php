@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 use App\Models\BO;
-use App\Models\FE;
-use Carbon\Carbon;
-use App\Models\FTD;
+use App\Models\CidCollection;
+use App\Models\CLickAndImprs;
 use App\Models\Currency;
+use App\Models\FE;
+use App\Models\FTD;
 use App\Models\Platform;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\RequestException;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class JeetbuzzController extends Controller
 {
@@ -41,13 +43,13 @@ class JeetbuzzController extends Controller
 
     //fetch the bo for bj88
     public function jeetbuzzBO(Request $request){
-        ini_set('max_execution_time', 1200); // Increase to 10 minutes
+        ini_set('max_execution_time', 3600); // Increase to 10 minutes
 
         // Call the currencyCollection method to get the array for the requested currency
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
-            $response = Http::timeout(1200)->post($this->url, [
+            $response = Http::timeout(3600)->post($this->url, [
                 'email' => 'exousianavi',
                 'password' => 'DataAnalys2024',
                 'link' => 'https://www.jeet.buzz/page/manager/login.jsp',
@@ -110,42 +112,47 @@ class JeetbuzzController extends Controller
                                 //'richads','richadspush','richadspkr','richadspkpush', 
 
                                 
-                                // $pendingKeywords = ['adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt'];
+                                $pendingKeywords = [
+                                    'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt',
+                                    'admavenbdt','onclicbdtpush','tforcepushbdt','s6adsterrabdt','s6shilltopads',
+                                    's6clickadubdt','s6clickadubdt','jbpktfshop','jbpkflatad','jbtrafficshop',
+                                    'jbhilltopads','jbclickadubdt','jbflatadbdt','jbadsterrabdt'
+                                ];
                                 // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
-                                // if(!in_array($value['Affiliate Username'], $pendingKeywords)){
-                                //     $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
-                                //     $clicks_response = Http::timeout(1200)->post($this->url_cai, [
-                                //         'keywords' => $value['Affiliate Username'],
-                                //         'email' => $clicksAndImpressionData['email'],
-                                //         'password' => $clicksAndImpressionData['password'],
-                                //         'link' => $clicksAndImpressionData['link'],
-                                //         'dashboard' => $clicksAndImpressionData['dashboard'],
-                                //         'platform' => $clicksAndImpressionData['platform'],
-                                //         'creative_id' => $clicksAndImpressionData['creative_id'],
-                                //     ]);
+                                if(!in_array($value['Affiliate Username'], $pendingKeywords)){
+                                    $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
+                                    $clicks_response = Http::timeout(1200)->post($this->url_cai, [
+                                        'keywords' => $value['Affiliate Username'],
+                                        'email' => $clicksAndImpressionData['email'],
+                                        'password' => $clicksAndImpressionData['password'],
+                                        'link' => $clicksAndImpressionData['link'],
+                                        'dashboard' => $clicksAndImpressionData['dashboard'],
+                                        'platform' => $clicksAndImpressionData['platform'],
+                                        'creative_id' => $clicksAndImpressionData['creative_id'],
+                                    ]);
 
-                                //     if($clicks_response->successful()){
-                                //         $clck_imprs = $clicks_response->json();
+                                    if($clicks_response->successful()){
+                                        $clck_imprs = $clicks_response->json();
         
-                                //         if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
-                                //             foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
-                                //                 Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
-                                //                 CLickAndImprs::create([
-                                //                     'b_o_s_id' => $bo->id,
-                                //                     'creative_id' => $clim['creative_id'],
-                                //                     'imprs' => $clim['Impressions'],
-                                //                     'clicks' => $clim['Clicks'],
-                                //                     'spending' => $clim['Spending'],
+                                        if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
+                                            foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
+                                                Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
+                                                CLickAndImprs::create([
+                                                    'b_o_s_id' => $bo->id,
+                                                    'creative_id' => $clim['creative_id'],
+                                                    'imprs' => $clim['Impressions'],
+                                                    'clicks' => $clim['Clicks'],
+                                                    'spending' => $clim['Spending'],
                                                     
-                                //                 ]);
-                                //             }
-                                //         }else{
-                                //             Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
-                                //         }
-                                //     }else {
-                                //         return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
-                                //     }
-                                // }
+                                                ]);
+                                            }
+                                        }else{
+                                            Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
+                                        }
+                                    }else {
+                                        return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
+                                    }
+                                }
 
                                 
 
@@ -266,6 +273,94 @@ class JeetbuzzController extends Controller
         }
     }
 
+
+    // private function for creative_id
+    private function creativeId($cid){
+        $creative_id = [
+            'jbpkrichadpush' => [
+                'creative_id' => ['3335665', '3308089','3268099'],
+                'email' => 'jeetbuzzpkr.sm@gmail.com',
+                'password' => 'JBpkrad@@!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            'jbrichadpush' => [
+                'creative_id' => ['3407446', '3335664','3307621','3268030'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            'jbrichads' => [
+                'creative_id' => ['3268172', '3231877','3229129','3209280','3209277','3218508','3215746'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            'jbadcash' => [
+                'creative_id' => ['403256220', '390764820','385074420','385612020','381963420','381962820','349441020','382867020'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://auth.myadcash.com/',
+                'dashboard' => 'https://adcash.myadcash.com/dashboard/main',
+                'platform' => 'adcash'
+            ],
+            'jbtrafficnom' => [
+                'creative_id' => ['22211', '20367','20331','20050','20049','13231','13232','20192','20151'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            'jbadsterrabdt' => [],
+            'jbflatadbdt' => [],
+            'jbclickadubdt' => [],
+            'jbtrafficstars' => [
+                'creative_id' => ['766473', '684234','669425','669413','502015','502017','674459','672589','20151'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://id.trafficstars.com/realms/trafficstars/protocol/openid-connect/auth?scope=openid&redirect_uri=http%3A%2F%2Fadmin.trafficstars.com%2Faccounts%2Fauth%2F%3Fnext%3Dhttps%3A%2F%2Fadmin.trafficstars.com%2F&response_type=code&client_id=web-app',
+                'dashboard' => 'https://admin.trafficstars.com/advertisers/campaigns/',
+                'platform' => 'trafficstars'
+            ],
+            'jbhilltopads' => [],
+            'jbtrafficshop' => [],
+            'jbpkrichads' => [
+                'creative_id' => ['3297541', '3250716','3250715'],
+                'email' => 'jeetbuzzpkr.sm@gmail.com',
+                'password' => 'JBpkrad@@!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            'jbpkradcash' => [
+                'creative_id' => ['403258020', '390765420','388655820','389251020'],
+                'email' => 'jeetbuzzpkr.sm@gmail.com',
+                'password' => 'JBpkrad@@!',
+                'link' => 'https://auth.myadcash.com/',
+                'dashboard' => 'https://adcash.myadcash.com/dashboard/main',
+                'platform' => 'adcash'
+            ],
+            'jbpkflatad' => [],
+            'jbpktrfnmd' => [
+                'creative_id' => ['20975','20743','20744'],
+                'email' => 'jeetbuzzpkr.sm@gmail.com',
+                'password' => 'JBpkrad@@!',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            'jbpktfshop' => [],
+        ];
+
+        return $creative_id[$cid];
+    }
+
     //automate spreedsheet report
     public function Spreedsheet(){
         ini_set('max_execution_time', 1200); // Increase to 10 minutes
@@ -274,14 +369,14 @@ class JeetbuzzController extends Controller
         $bos = BO::with(['fe','ftds','clicks_impression:b_o_s_id,creative_id,imprs,clicks,spending'])
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','jeetbuzz')
-        ->where('is_merged',true)
+        ->where('is_merged',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
         // dd($bos);
 
         // $keys = ["adxadbdt","adcash","trafficnombdt","exoclick",  'trafnomnpop'];
-        // $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
+        $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
         foreach ($bos as $bo) {
             // dd($bo->clicks_impression);
             // dd($bo);
@@ -290,39 +385,39 @@ class JeetbuzzController extends Controller
             $impressions_data = [];
 
             // commented just for now to make a BO functional
-            // if (!empty($bo->clicks_impression)) {
-            //     // Process each clicks_impression record and add keys
-            //     foreach ($bo->clicks_impression as $impression) {
-            //         if(in_array($impression->creative_id, $idToUsedKeywords)){
-            //             // dd($this->cKeys($impression->creative_id));
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $this->cKeys($impression->creative_id),
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }else{
+            if (!empty($bo->clicks_impression)) {
+                // Process each clicks_impression record and add keys
+                foreach ($bo->clicks_impression as $impression) {
+                    if(in_array($impression->creative_id, $idToUsedKeywords)){
+                        // dd($this->cKeys($impression->creative_id));
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $this->cKeys($impression->creative_id),
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }else{
                         
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $impression->creative_id,
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }
-            //     }
-            // } else {
-            //     // Handle the case where $bo->clicks_impression is empty, if needed
-            //     Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
-            // }
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $impression->creative_id,
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }
+                }
+            } else {
+                // Handle the case where $bo->clicks_impression is empty, if needed
+                Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
+            }
             
 
             $dataset[] = [
@@ -369,6 +464,35 @@ class JeetbuzzController extends Controller
             return response()->json(['error' => 'Failed to fetch FE data'], 500);
         }
         
+    }
+
+    private function cKeys($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        if($cid){
+            return $cid->keyword;
+        }else{
+            return $id;
+        }
+        
+    }
+    
+    private function campaignNsuId($id){
+        // dd($id);
+        // $countNSU = FE::where()->count();
+        $cid = CidCollection::where('cid',$id)->first();
+        // if($cid){
+        //     dd($cid->keyword);
+        // }
+        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        // dd($countNSU);
+        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        return $countNSU;
+    }
+    
+    private function campaignFtdId($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        return $countNSU;
     }
 
     // private function for currency and associated keywords
@@ -516,14 +640,14 @@ class JeetbuzzController extends Controller
             'jbrichads' => 'qaz123',
             'jbadcash' => 'qaz123',
             'jbtrafficnom' => 'qaz123',
-            'jbadsterrabdt' => 'qaz123',
+            'jbadsterrabdt' => 'qaz123',//invalid
             'jbflatadbdt' => 'qaz123',
-            'jbclickadubdt' => 'qaz123',
-            'jbtrafficstars' => 'qaz123',
+            'jbclickadubdt' => 'qaz123',//invalid
+            'jbtrafficstars' => 'qaz123',//invalid
             'jbhilltopads' => 'qaz123',
-            'jbtrafficshop' => 'qaz123',
+            'jbtrafficshop' => 'qaz123',//invalid
             'jbrichadpush' => 'qaz123',
-            'jbpkrichadpush' => 'qaz123',
+            'jbpkrichadpush' => 'qaz123',//invalid
         ];
         return $accounts[$key];
     }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
+use App\Models\CidCollection;
+use App\Models\CLickAndImprs;
 use App\Models\Currency;
 use App\Models\FE;
 use App\Models\FTD;
@@ -86,11 +88,6 @@ class Bj88Controller extends Controller
                                 'brand' => 'bj88'
                             ]);
 
-                            
-                            
-
-
-
                             // Fetch data from the second platform using the affiliate username
                             $accountData = $this->feAccountBaji($value['Affiliate Username']);
                             $fe_response = Http::timeout(1200)->post($this->url_fe, [
@@ -117,42 +114,47 @@ class Bj88Controller extends Controller
                                 //'richads','richadspush','richadspkr','richadspkpush', 
 
                                 
-                                // $pendingKeywords = ['adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt'];
-                                // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
-                                // if(!in_array($value['Affiliate Username'], $pendingKeywords)){
-                                //     $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
-                                //     $clicks_response = Http::timeout(1200)->post($this->url_cai, [
-                                //         'keywords' => $value['Affiliate Username'],
-                                //         'email' => $clicksAndImpressionData['email'],
-                                //         'password' => $clicksAndImpressionData['password'],
-                                //         'link' => $clicksAndImpressionData['link'],
-                                //         'dashboard' => $clicksAndImpressionData['dashboard'],
-                                //         'platform' => $clicksAndImpressionData['platform'],
-                                //         'creative_id' => $clicksAndImpressionData['creative_id'],
-                                //     ]);
+                                $pendingKeywords = [
+                                    'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads',
+                                    'trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt',
+                                    '88idflatad','88idcadu','88phpadsterra','88phclickadu','88phflatad','88krhtopads',
+                                    '88krclickadu','88krpadsterra','88vnhtopads','88vnflatad','88vnclickadu'
+                                ];
+                                $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
+                                if(!in_array($value['Affiliate Username'], $pendingKeywords)){
+                                    $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
+                                    $clicks_response = Http::timeout(1200)->post($this->url_cai, [
+                                        'keywords' => $value['Affiliate Username'],
+                                        'email' => $clicksAndImpressionData['email'],
+                                        'password' => $clicksAndImpressionData['password'],
+                                        'link' => $clicksAndImpressionData['link'],
+                                        'dashboard' => $clicksAndImpressionData['dashboard'],
+                                        'platform' => $clicksAndImpressionData['platform'],
+                                        'creative_id' => $clicksAndImpressionData['creative_id'],
+                                    ]);
 
-                                //     if($clicks_response->successful()){
-                                //         $clck_imprs = $clicks_response->json();
+                                    if($clicks_response->successful()){
+                                        $clck_imprs = $clicks_response->json();
         
-                                //         if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
-                                //             foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
-                                //                 Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
-                                //                 CLickAndImprs::create([
-                                //                     'b_o_s_id' => $bo->id,
-                                //                     'creative_id' => $clim['creative_id'],
-                                //                     'imprs' => $clim['Impressions'],
-                                //                     'clicks' => $clim['Clicks'],
-                                //                     'spending' => $clim['Spending'],
+                                        if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
+                                            foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
+                                                Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
+                                                CLickAndImprs::create([
+                                                    'b_o_s_id' => $bo->id,
+                                                    'creative_id' => $clim['creative_id'],
+                                                    'imprs' => $clim['Impressions'],
+                                                    'clicks' => $clim['Clicks'],
+                                                    'spending' => $clim['Spending'],
                                                     
-                                //                 ]);
-                                //             }
-                                //         }else{
-                                //             Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
-                                //         }
-                                //     }else {
-                                //         return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
-                                //     }
-                                // }
+                                                ]);
+                                            }
+                                        }else{
+                                            Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
+                                        }
+                                    }else {
+                                        return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
+                                    }
+                                }
 
                                 
 
@@ -273,6 +275,114 @@ class Bj88Controller extends Controller
         }
     }
 
+    // private function for creative_id
+    private function creativeId($cid){
+        $creative_id = [
+            '88idriads' => [
+                'creative_id' => ['3323728', '3311676'],
+                'email' => 'apakhabar8888@gmail.com',
+                'password' => 'Khabarbaik8888.!@#$%^',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            '88idflatad' => [],
+            '88idcadu' => [],//clickadu
+            '88idriadspush' => [
+                'creative_id' => ['3316498', '3316496', '3316494','3316493','3316491','3316490','3316483'],
+                'email' => 'apakhabar8888@gmail.com',
+                'password' => 'Khabarbaik8888.!@#$%^',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            '88phpadsterra' => [],//adsterra
+            '88phtfnomads' => [
+                'creative_id' => ['22407', '20979', '20980','22126','20376','20326','20234'],
+                'email' => 'seri1212yoon@gmail.com',
+                'password' => 'yoon1212seri!!*!@',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            '88phtfstars' => [
+                'creative_id' => ['748046'],
+                'email' => 'seri1212yoon@gmail.com',
+                'password' => 'yoon1212seri!!*!@',
+                'link' => 'https://id.trafficstars.com/realms/trafficstars/protocol/openid-connect/auth?scope=openid&redirect_uri=http%3A%2F%2Fadmin.trafficstars.com%2Faccounts%2Fauth%2F%3Fnext%3Dhttps%3A%2F%2Fadmin.trafficstars.com%2F&response_type=code&client_id=web-app',
+                'dashboard' => 'https://admin.trafficstars.com/advertisers/campaigns/',
+                'platform' => 'trafficstars'
+            ],
+            '88phclickadu' => [],//clickadu
+            '88phflatad' => [],
+            '88phadxad' => [
+                'creative_id' => ['59694','59248','55756'],
+                'email' => 'seri1212yoon@gmail.com',
+                'password' => 'yoon1212seri!!*!@',
+                'link' => 'https://td.adxad.com/auth/login?lang=en',
+                'dashboard' => 'https://td.adxad.com/auth/login?lang=en',
+                'platform' => 'adxad'
+            ],
+            '88krhtopads' => [],
+            '88krtfnomads' => [
+                'creative_id' => ['20987'],
+                'email' => 'bj88krw.sm@gmail.com',
+                'password' => 'bj88Krw888!!@',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            '88krclickadu' => [],//clickadu
+            '88krpadsterra' => [],//adsterra
+            '88vnrichads' => [
+                'creative_id' => ['3268845','3233017','3216750','3216781'],
+                'email' => 'bj88vnd.sm@gmail.com',
+                'password' => 'bj88Vn126!!*1',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            '88vnhtopads' => [],
+            '88vntfnmads' => [
+                'creative_id' => ['15736','20373','22122','15737','20179','20180'],
+                'email' => 'bj88vnd.sm@gmail.com',
+                'password' => 'bj88Vn126!!*1',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            '88vnflatad' => [],
+            '88vnclickadu' => [],
+            '88khdaopush' => [
+                'creative_id' => ['322372','301903'],
+                'email' => 'bj88khr.sm1@gmail.com',
+                'password' => 'Khr881314!!*',
+                'link' => 'https://dao.ad/login',
+                'dashboard' => 'https://dao.ad/manage/dashboard',
+                'platform' => 'daoad'
+            ],
+            '88phadxadpush' => [
+                'creative_id' => ['60126','57986','57594','55775'],
+                'email' => 'seri1212yoon@gmail.com',
+                'password' => 'yoon1212seri!!*!@',
+                'link' => 'https://td.adxad.com/auth/login?lang=en',
+                'dashboard' => 'https://td.adxad.com/auth/login?lang=en',
+                'platform' => 'adxad'
+            ],
+            '88vnrichadpush' => [
+                'creative_id' => ['3400206','3380074','3380073','3380072','3380071','3379987'],
+                'email' => 'bj88vnd.sm@gmail.com',
+                'password' => 'bj88Vn126!!*1',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+
+        ];
+
+        return $creative_id[$cid];
+    }
+
     //automate spreedsheet report
     public function Spreedsheet(){
         ini_set('max_execution_time', 1200); // Increase to 10 minutes
@@ -288,7 +398,13 @@ class Bj88Controller extends Controller
         // dd($bos);
 
         // $keys = ["adxadbdt","adcash","trafficnombdt","exoclick",  'trafnomnpop'];
-        // $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
+        $idToUsedKeywords = [
+            '672477','673437','500658','500702','668180','668181','676083',
+            '500702', '760898',"500658","760898","382857420","402136020",
+            '22210','852417','868539','1007305','1076509','6072336','6072337',
+            '6079867','55347','6394024','6705106','8126375','8391394','2819554',
+            '2822036','2582325','2383093','2803097','2803098','2826736','2488219',
+            '2383092','303343','3275182','3275412','21993820'];
         foreach ($bos as $bo) {
             // dd($bo->clicks_impression);
             // dd($bo);
@@ -296,40 +412,40 @@ class Bj88Controller extends Controller
             // Initialize an array to store processed impression and click data
             $impressions_data = [];
 
-            // commented just for now to make a BO functional
-            // if (!empty($bo->clicks_impression)) {
-            //     // Process each clicks_impression record and add keys
-            //     foreach ($bo->clicks_impression as $impression) {
-            //         if(in_array($impression->creative_id, $idToUsedKeywords)){
-            //             // dd($this->cKeys($impression->creative_id));
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $this->cKeys($impression->creative_id),
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }else{
+            if (!empty($bo->clicks_impression)) {
+                // dd($bo->clicks_impression);
+                // Process each clicks_impression record and add keys
+                foreach ($bo->clicks_impression as $impression) {
+                    if(in_array($impression->creative_id, $idToUsedKeywords)){
+                        // dd($this->cKeys($impression->creative_id));
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $this->cKeys($impression->creative_id),
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }else{
                         
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $impression->creative_id,
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }
-            //     }
-            // } else {
-            //     // Handle the case where $bo->clicks_impression is empty, if needed
-            //     Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
-            // }
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $impression->creative_id,
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }
+                }
+            } else {
+                // Handle the case where $bo->clicks_impression is empty, if needed
+                Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
+            }
             
 
             $dataset[] = [
@@ -348,6 +464,7 @@ class Bj88Controller extends Controller
 
         if ($sp->successful()) {
             $sdata = $sp->json();
+            // dd($sdata);
             $filteredData = array_slice($sdata['data'], 1);
             // dd($filteredData);
             // Filter out null values
@@ -377,7 +494,35 @@ class Bj88Controller extends Controller
         }
         
     }
+
+    private function cKeys($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        if($cid){
+            return $cid->keyword;
+        }else{
+            return $id;
+        }
+        
+    }
+
+    private function campaignNsuId($id){
+        // dd($id);
+        // $countNSU = FE::where()->count();
+        $cid = CidCollection::where('cid',$id)->first();
+        // if($cid){
+        //     dd($cid->keyword);
+        // }
+        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        // dd($countNSU);
+        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        return $countNSU;
+    }
     
+    private function campaignFtdId($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        return $countNSU;
+    }
     // private function for currency and associated keywords
     private function currencyCollection($curr)
     {
@@ -441,91 +586,91 @@ class Bj88Controller extends Controller
     private function spreedsheetId($sid){
         $sheet_id = [
             '88vnrichadpush' => [
-                'spreed_id' => '1igx4Lvrz9R4N6APabjUrEwDAZKklbZPPL6p934iyV6s',
+                'spreed_id' => '1KGBA7C1m_R3o9csspSrkhUh9xVWAQROIRr5zNClBw64',
                 'platform' => 'Richads'
             ],
             '88phadxadpush' => [
-                'spreed_id' => '1SnixIG-5L3zGbX3xAJQPtYo6nQk7MxwqtPBkjA2buTg',
+                'spreed_id' => '15gz7xwNiFcmvCH_V9vJUVsxocJYe6GarrFtmITfxZE8',
                 'platform' => 'ADxAD'
             ],
             '88khdaopush' => [
-                'spreed_id' => '1WRnWTNUWVBEcufOZ3sL6zUDNrMvainSp5Pc_130pHqo',
+                'spreed_id' => '1AdAsdOcUW2K6GE35VFrwXgKnht3jkDy4tQj7TAoXSKM',
                 'platform' => 'DaoAd'
             ],
             '88vnrichads' => [
-                'spreed_id' => '1CkX3jyN9w9CqXneituUvL2-BvnTgWjJhbE0vuVmBGrA',
+                'spreed_id' => '1mbXn37u8-y4GsD6CbKjz-rdJilTgt1cHJ-TGJNSyFBU',
                 'platform' => 'Richads'
             ],
             '88vnhtopads' => [
-                'spreed_id' => '1CkX3jyN9w9CqXneituUvL2-BvnTgWjJhbE0vuVmBGrA',
+                'spreed_id' => '1mbXn37u8-y4GsD6CbKjz-rdJilTgt1cHJ-TGJNSyFBU',
                 'platform' => 'HilltopAds'
             ],
             '88vntfnmads' => [
-                'spreed_id' => '1CkX3jyN9w9CqXneituUvL2-BvnTgWjJhbE0vuVmBGrA',
+                'spreed_id' => '1mbXn37u8-y4GsD6CbKjz-rdJilTgt1cHJ-TGJNSyFBU',
                 'platform' => 'TrafficNomads'
             ],
             '88vnflatad' => [
-                'spreed_id' => '1CkX3jyN9w9CqXneituUvL2-BvnTgWjJhbE0vuVmBGrA',
+                'spreed_id' => '1mbXn37u8-y4GsD6CbKjz-rdJilTgt1cHJ-TGJNSyFBU',
                 'platform' => 'Flatad'
             ],
             '88vnclickadu' => [
-                'spreed_id' => '1CkX3jyN9w9CqXneituUvL2-BvnTgWjJhbE0vuVmBGrA',
+                'spreed_id' => '1mbXn37u8-y4GsD6CbKjz-rdJilTgt1cHJ-TGJNSyFBU',
                 'platform' => 'ClickAdu'
             ],
             '88krhtopads' => [
-                'spreed_id' => '1XVhhlbgx6WDZ4zvncIHImdNhG-tH04pRt6MTyJOJwJU',
+                'spreed_id' => '1Q54aQxtXQYk8JVmtJH3KE-HW_bIDFjMCgJuT2FI0n5I',
                 'platform' => 'Hilltopads'
             ],
             '88krclickadu' => [
-                'spreed_id' => '1XVhhlbgx6WDZ4zvncIHImdNhG-tH04pRt6MTyJOJwJU',
+                'spreed_id' => '1Q54aQxtXQYk8JVmtJH3KE-HW_bIDFjMCgJuT2FI0n5I',
                 'platform' => 'ClickAdu'
             ],
             '88krtfnomads' => [
-                'spreed_id' => '1XVhhlbgx6WDZ4zvncIHImdNhG-tH04pRt6MTyJOJwJU',
+                'spreed_id' => '1Q54aQxtXQYk8JVmtJH3KE-HW_bIDFjMCgJuT2FI0n5I',
                 'platform' => 'Traffic Nomads'
             ],
             '88krpadsterra' => [
-                'spreed_id' => '1XVhhlbgx6WDZ4zvncIHImdNhG-tH04pRt6MTyJOJwJU',
+                'spreed_id' => '1Q54aQxtXQYk8JVmtJH3KE-HW_bIDFjMCgJuT2FI0n5I',
                 'platform' => 'Adsterra'
             ],
             '88idriadspush' => [
-                'spreed_id' => '1Pvf-SCHUfCOAlEQb3PIhzPtSeMKBrPZPAl2zRVZzkYU',
+                'spreed_id' => '1xOZZVuB9-a6DFsTwIjoW7va7znZX2POvShfNdVt4BmA',
                 'platform' => 'Richads'
             ],
             '88idriads' => [
-                'spreed_id' => '1OSl4sTDJR-7J7xbuKYiEcH0TFkjhB7k6GRUg0D72rEc',
+                'spreed_id' => '19NocXpXiiTXvpGtqyQx_yrOX9weC664kLc5OIwyCyvk',
                 'platform' => 'Richads'
             ],
             '88idflatad' => [
-                'spreed_id' => '1OSl4sTDJR-7J7xbuKYiEcH0TFkjhB7k6GRUg0D72rEc',
+                'spreed_id' => '19NocXpXiiTXvpGtqyQx_yrOX9weC664kLc5OIwyCyvk',
                 'platform' => 'FlatAd'
             ],
             '88idcadu' => [
-                'spreed_id' => '1OSl4sTDJR-7J7xbuKYiEcH0TFkjhB7k6GRUg0D72rEc',
+                'spreed_id' => '19NocXpXiiTXvpGtqyQx_yrOX9weC664kLc5OIwyCyvk',
                 'platform' => 'ClickAdu'
             ],
             '88phpadsterra' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'Adsterra'
             ],
             '88phtfnomads' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'Traffic Nomads'
             ],
             '88phtfstars' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'TrafficStars'
             ],
             '88phclickadu' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'ClickAdu'
             ],
             '88phflatad' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'FlatAd'
             ],
             '88phadxad' => [
-                'spreed_id' => '1iPctINsxRyWJ040DAfWn0EL-pA8SZDO7keYECQNZIs0',
+                'spreed_id' => '1ZyXSc_q0lo8cMS7GxlGfLO4jUeHqWQnZQF0O8vFc09E',
                 'platform' => 'ADxAD'
             ],
         ];

@@ -2,6 +2,29 @@ import asyncio
 import os
 import urllib.request
 import sys
+import logging
+import pydub
+from datetime import datetime, timedelta
+import speech_recognition as sr
+from pydub.playback import play
+
+from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+
+# Set the path to your local FFmpeg and FFprobe
+ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
+ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
+
+# Set environment variables
+os.environ["PATH"] += os.pathsep + ffmpeg_path
+os.environ["PATH"] += os.pathsep + ffprobe_path
+
+path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
+path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
+    
+import asyncio
+import os
+import urllib.request
+import sys
 from pathlib import Path
 import logging
 import pydub
@@ -11,7 +34,7 @@ import speech_recognition as sr
 from pydub.playback import play
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
-class TrafficNomadsAutomation:
+class RichadsAutomation:
     def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
         self.keywords = keywords
         self.email = email
@@ -67,7 +90,7 @@ class TrafficNomadsAutomation:
                         if not await self.fill_login_form(page):
                             return {"status": 400, "text": "Failed to fill the login form."}
                         
-                        await self.solve_recaptcha(page)
+                        # await self.solve_recaptcha(page)
                     
                         if not await self.submit_form(page):
                             return {"status": 400, "text": "Failed to submit the login form."}
@@ -78,7 +101,7 @@ class TrafficNomadsAutomation:
                         return {"status": 400, "text": "Failed to click report button."}
                     await page.wait_for_load_state('load')
                 
-                    nomads = await self.scrapping(page)
+                    rch = await self.scrapping(page)
                     
                     await page.wait_for_load_state('load')
                     await asyncio.sleep(5)
@@ -86,7 +109,9 @@ class TrafficNomadsAutomation:
                     state = await context.storage_state()
                     Path(self.session_file_path).write_text(json.dumps(state))
                     logging.info("Session saved.")
-                    return nomads
+                    
+                    logging.info(f"Collected: {rch}")
+                    return rch
                     break  # Exit the loop if successful
 
                 except Exception as e:
@@ -107,8 +132,18 @@ class TrafficNomadsAutomation:
 
     async def submit_form(self, page):
         try:
-            await page.click('#loginuser')
-            await self.wait_for_navigation(page)
+            await page.get_by_role("button", name="Log In").click()
+            await asyncio.sleep(2)
+            await page.frame_locator("iframe[name=\"carrot-notification-frame\"]").locator("#notification-close").click()
+            await asyncio.sleep(2)
+            # Scroll down by 1000 pixels
+            await page.mouse.wheel(0, 1000)
+
+            await asyncio.sleep(5)
+            # is_error_visible = await page.is_visible('div.error.ng-star-inserted')
+            
+            await self.solve_recaptcha(page)
+            await page.get_by_role("button", name="Log In").click()
             return True
         except PlaywrightTimeoutError:
             logging.error("Timeout during form submission.")
@@ -123,89 +158,129 @@ class TrafficNomadsAutomation:
             return False
 
     async def report(self, page):
+        await asyncio.sleep(5)
         try:
-            reports = '//*[@id="navleftrowinitial"]/div[4]/a'
-            try:
-                await page.eval_on_selector(f'xpath={reports}', "element => element.click()")
+                await page.get_by_role("link", name="Reporting").click()
+                await asyncio.sleep(2)
+                await page.get_by_role("link", name="Switch to Legacy version").click()
                 logging.info("Report button clicked using JavaScript.")
-            except PlaywrightTimeoutError:
-                logging.warning("Failed to click the report button using JavaScript.")
-            await page.wait_for_load_state('networkidle')
-            await asyncio.sleep(2)
-            return True
+                return True
         except PlaywrightTimeoutError:
-            logging.error("Navigation failed")
-            return False
+                logging.warning("Failed to click the report button using JavaScript.")
+                return False
+        
 
     async def scrapping(self, page):
+        n = True
+        try:  
+            await page.wait_for_load_state('networkidle')
+            await asyncio.sleep(5)
+            
+            await page.locator(".selectize-input").first.click()
+            await page.get_by_text("Yesterday").click()
+            await page.locator("span > div > div > div > .selectize-control > .selectize-input").first.click()
+            await page.get_by_text("Creative ID").click()
+            await page.locator(".text-field").click()
+        except PlaywrightTimeoutError:
+            logging.error("Navigation failed")
+        
         try:
-            yesterday = datetime.now() - timedelta(1)
-            formatted_date = yesterday.strftime("%Y-%m-%d")
-            date_range = f"{formatted_date} - {formatted_date}"
-
-            await page.fill('#filter_date', date_range)
-            await asyncio.sleep(2)
-            yesterday_btn_option = '/html/body/div[14]/div[1]/ul/li[2]'
-            await page.eval_on_selector(f'xpath={yesterday_btn_option}', "element => element.click()")
-            logging.info("Yesterday button option clicked using JavaScript.")
-
             results = []
             for cid in self.creative_id:
+                # await page.get_by_placeholder("Creative ID").fill("3268137")
                 try:
-                    # Try to insert the CID and select it
-                    await page.get_by_role("searchbox", name="All").nth(2).fill(cid)
-                    await page.locator('.select2-results__option.select2-results__option--highlighted').click()
-                    logging.info(f"Keyword '{cid}' inserted and selected successfully.")
+                    # Wait for the input field to be available and fill it with the value
+                    await page.get_by_placeholder("Creative ID").fill(cid, timeout=2000)  # Set a timeout of 5 seconds
+                    print("Successfully filled the Creative ID field.")
+                    n = False
+                except PlaywrightTimeoutError:
+                    print("Filling the Creative ID field timed out.")
+                    n = True
+                
+                if n:
+                    print('option not available')
+                else:
+                    print('option available...')
+                    # await page.locator(".text-field > .selectize-control > .selectize-dropdown > .selectize-dropdown-content > .option").click()
+                    # Locate all matching elements
+                    options = page.locator(".text-field > .selectize-control > .selectize-dropdown > .selectize-dropdown-content > .option")
 
-                    # Apply the filter
-                    await page.get_by_role("button", name="Apply").click()
-                    await asyncio.sleep(10)
-                    await page.wait_for_selector("#DataTables_Table_0 tfoot tr", state="visible", timeout=60000)
-                    logging.info("Table footer loaded.")
-                    await page.mouse.wheel(0, 1000)
-                    tr_locator = page.locator("#DataTables_Table_0 tfoot tr")
+                    # Get the count of matched elements
+                    count = await options.count()
 
-                    # Extract data from the footer
-                    impressions = await tr_locator.locator("th").nth(1).text_content()
-                    clicks = await tr_locator.locator("th").nth(2).text_content()
-                    spending = await tr_locator.locator("th").nth(3).text_content()
+                    # Iterate over all matched elements and print their text and attribute values
+                    # Iterate over all matched elements and compare their text with `cid`
+                    for i in range(count):
+                        option_text = (await options.nth(i).text_content()).strip()  # Strip any whitespace
+                        option_value = await options.nth(i).get_attribute("data-value")
 
+                        if option_text == cid:  # Use `==` for comparison in Python
+                            print('Clicking that option...')
+                            await options.nth(i).click()  # Click the matching option
+                            n = False
+                            break  # Exit the loop after clicking the desired option
+                        else:
+                            print(f"No match for {option_text}...")
+                            n = True
+
+                        await asyncio.sleep(1)  # Adjust sleep time as necessary
+
+                if n:
+                   data = {
+                        'creative_id': cid,
+                        'Impressions': 0,
+                        'Clicks': 0,
+                        'Spending': 0,
+                        # 'Profit': profit.strip()
+                    } 
+                else:
+                    await asyncio.sleep(5)
+                    # Retrieve the values of the cells using the provided XPath and strip whitespace
+                    impressions = (await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[2]/div[1]/div/table/tbody/tr[3]/td[9]').text_content()).strip()
+                    clicks = (await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[2]/div[1]/div/table/tbody/tr[3]/td[11]').text_content()).strip()
+                    spending = (await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[2]/div[1]/div/table/tbody/tr[3]/td[21]').text_content()).strip()
+
+                    await page.screenshot(path=f"richads_{cid}.png", full_page=True)
+                    await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[1]/div/span/div/div[1]/div[2]/div/div[1]/div/a').click()
+                    await page.locator('xpath=/html/body/div[2]/div/div/div/div/div[1]/div/span/div/div[1]/div[2]/div/div[1]/div/a').click()
+                    print('click twice...')
+                    # await page.get_by_role("link", name="×").click()
+                    # await page.get_by_role("link", name="×").click()    
+                    # scroll up
+                    await page.mouse.wheel(0, -1000)
+                    # await page.get_by_text("×").click()
+                    
                     data = {
                         'creative_id': cid,
-                        'Impressions': impressions.strip(),
-                        'Clicks': clicks.strip(),
-                        'Spending': spending.strip(),
+                        'Impressions': impressions,
+                        'Clicks': clicks,
+                        'Spending': spending,
+                        # 'Profit': profit.strip()
                     }
-
-                except Exception as e:
-                    # If any error occurs (including Locator.click timeout), assign default values
-                    logging.error(f"An error occurred with creative_id '{cid}': {str(e)}. Defaulting values to 0.")
-                    data = {
-                        'creative_id': cid,
-                        'Impressions': '0',
-                        'Clicks': '0',
-                        'Spending': '0'
-                    }
-
-                # Append the result and move on to the next CID
+                   
                 results.append(data)
                 logging.info(f"Data for creative_id '{cid}' collected: {data}")
-
-                # Scroll up and close the search for the next loop
-                await page.mouse.wheel(0, -1000)
-                await page.get_by_text("×").click()
-
-            logging.info(f"Collected: {results}")
+                
+                logging.info(f"Collected: {results}")
             return results
 
         except Exception as e:
             logging.error(f"An error occurred while scraping data: {str(e)}")
             return None
-
+        except PlaywrightTimeoutError:
+            logging.error("Input yesterday wait timeout.")
+            return False
 
     async def solve_recaptcha(self, page):
-        if await page.frame_locator('iframe').first.locator('div.recaptcha-checkbox-border').is_visible():
-            await page.frame_locator('iframe').first.locator('div.recaptcha-checkbox-border').click()
+        # # Wait for the iframe to appear on the page
+        iframe_element = await page.wait_for_selector('iframe[title="reCAPTCHA"]')
+        
+        if await page.wait_for_selector('iframe[title="reCAPTCHA"]'):
+            # Get the iframe's content frame
+            iframe = await iframe_element.content_frame()
+            # Now you can interact with elements inside the iframe
+            recaptcha_checkbox = await iframe.wait_for_selector('#recaptcha-anchor')
+            await recaptcha_checkbox.click()
             if await self.check_dos_captcha(page):
                 raise Exception("Detected 'Try again later' message.")
             await self.solve_audio_challenge(page)
@@ -302,52 +377,19 @@ class TrafficNomadsAutomation:
 
             except PlaywrightTimeoutError:
                 logging.error("Audio challenge failed due to timeout.")
+                raise Exception("Audio challenge failed due to timeout.")
                 
 
-    # async def solve_audio_challenge(self, page):
-    #     audio_frame = page.frame_locator('iframe[title="recaptcha challenge expires in two minutes"]')
-    #     audio_button = audio_frame.locator('button#recaptcha-audio-button')
-    #     if await audio_button.is_visible():
-    #         await audio_button.click()
-    #         print("[INFO] Audio button clicked. Waiting for the audio source...")
-    #         try:
-    #             audio_source = await audio_frame.locator('audio').get_attribute('src')
-    #             if not audio_source:
-    #                 raise Exception("No audio source found.")
-    #             print(f"[INFO] Audio source found: {audio_source}")
-
-    #             urllib.request.urlretrieve(audio_source, self.path_to_mp3)
-    #             print("[INFO] Audio CAPTCHA downloaded. Converting to WAV format...")
-    #             sound = pydub.AudioSegment.from_mp3(self.path_to_mp3)
-    #             sound.export(self.path_to_wav, format="wav")
-    #             audio = pydub.AudioSegment.from_wav(self.path_to_wav)
-    #             play(audio)
-
-    #             recognizer = sr.Recognizer()
-    #             with sr.AudioFile(self.path_to_wav) as source:
-    #                 audio = recognizer.record(source)
-    #             print("[INFO] Transcribing audio...")
-    #             transcription = recognizer.recognize_google(audio)
-    #             print(f"[INFO] Transcription: {transcription}")
-
-    #             transcription_input = audio_frame.locator('input[type="text"]')
-    #             await transcription_input.fill(transcription)
-    #             verify_button = audio_frame.locator('button#recaptcha-verify-button')
-    #             await verify_button.click()
-
-    #         except PlaywrightTimeoutError:
-    #             logging.error("Audio challenge failed due to timeout.")
-
-    # async def fetch_info(self):
-    #     await self.main()
-
 # Example usage in another file
-# if __name__ == "__main__":
-#     automation = TrafficNomadsAutomation(
-#         keywords="trafficnompkr",
-#         email="abiralmilan1014@gmail.com",
-#         password="B@j!qwe@4444",
-#         link="https://bajipartners.com/page/affiliate/login.jsp",
-#         creative_id=["20948", "20947", "22698"]
-#     )
-#     asyncio.run(automation.fetch_info())
+if __name__ == "__main__":
+    automation = RichadsAutomation(
+        keywords="adsterra",
+        email="chengyi-1",
+        password="B@j!09876**1234",
+        link="https://beta.partners.adsterra.com/login",
+        dashboard="https://beta.partners.adsterra.com/login",
+        platform="adsterra",
+        creative_id=['852417 ','868539','1007305','1076509']
+    )
+    asyncio.run(automation.run())
+

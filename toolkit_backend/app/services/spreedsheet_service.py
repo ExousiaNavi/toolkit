@@ -50,6 +50,17 @@ class GoogleSheetsManager:
             print(f"Yesterday's date '{yesterday_date_no_zero}' not found.")
             return None
 
+    def get_matched_keyword(self, keyw):
+        # Check if the provided keyword is in the array
+        if keyw  == 'Baji (adcash)':
+            return 'adcash'
+        if keyw == 'Baji (jbclickadubdt)':
+            return 'jbclickadubdt'
+        if keyw == 'Baji (jbtrafficstars)':
+            return 'jbtrafficstars'
+        else:
+            return keyw  # or any default value you'd prefer
+        
     async def run(self):
         """Find the target substring, get values below in the same column, and update a cell."""
         try:
@@ -123,7 +134,7 @@ class GoogleSheetsManager:
                 "icon": "success",
                 "time": datetime.now().strftime("%I:%M %p"),
                 "platform": self.platform,
-                "keyword": self.keyword
+                "keyword": self.get_matched_keyword(self.keyword)
             }
             return data
         except HttpError as err:

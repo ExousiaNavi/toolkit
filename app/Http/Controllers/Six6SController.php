@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
-use App\Models\FE;
-use Carbon\Carbon;
-use App\Models\FTD;
+use App\Models\CidCollection;
+use App\Models\CLickAndImprs;
 use App\Models\Currency;
+use App\Models\FE;
+use App\Models\FTD;
 use App\Models\Platform;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Client\RequestException;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Six6SController extends Controller
 {
@@ -111,42 +113,46 @@ class Six6SController extends Controller
                                 //'richads','richadspush','richadspkr','richadspkpush', 
 
                                 
-                                // $pendingKeywords = ['adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt'];
+                                $pendingKeywords = [
+                                    'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt',
+                                    'admavenbdt','onclicbdtpush','tforcepushbdt','s6adsterrabdt','s6shilltopads',
+                                    's6clickadubdt','s6clickadubdt'
+                                ];
                                 // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
-                                // if(!in_array($value['Affiliate Username'], $pendingKeywords)){
-                                //     $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
-                                //     $clicks_response = Http::timeout(1200)->post($this->url_cai, [
-                                //         'keywords' => $value['Affiliate Username'],
-                                //         'email' => $clicksAndImpressionData['email'],
-                                //         'password' => $clicksAndImpressionData['password'],
-                                //         'link' => $clicksAndImpressionData['link'],
-                                //         'dashboard' => $clicksAndImpressionData['dashboard'],
-                                //         'platform' => $clicksAndImpressionData['platform'],
-                                //         'creative_id' => $clicksAndImpressionData['creative_id'],
-                                //     ]);
+                                if(!in_array($value['Affiliate Username'], $pendingKeywords)){
+                                    $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
+                                    $clicks_response = Http::timeout(1200)->post($this->url_cai, [
+                                        'keywords' => $value['Affiliate Username'],
+                                        'email' => $clicksAndImpressionData['email'],
+                                        'password' => $clicksAndImpressionData['password'],
+                                        'link' => $clicksAndImpressionData['link'],
+                                        'dashboard' => $clicksAndImpressionData['dashboard'],
+                                        'platform' => $clicksAndImpressionData['platform'],
+                                        'creative_id' => $clicksAndImpressionData['creative_id'],
+                                    ]);
 
-                                //     if($clicks_response->successful()){
-                                //         $clck_imprs = $clicks_response->json();
+                                    if($clicks_response->successful()){
+                                        $clck_imprs = $clicks_response->json();
         
-                                //         if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
-                                //             foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
-                                //                 Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
-                                //                 CLickAndImprs::create([
-                                //                     'b_o_s_id' => $bo->id,
-                                //                     'creative_id' => $clim['creative_id'],
-                                //                     'imprs' => $clim['Impressions'],
-                                //                     'clicks' => $clim['Clicks'],
-                                //                     'spending' => $clim['Spending'],
+                                        if(isset($clck_imprs['data']['clicks_and_impr']) && is_array($clck_imprs['data']['clicks_and_impr'])){
+                                            foreach ($clck_imprs['data']['clicks_and_impr'] as $clim) {
+                                                Log::info('Creative ID:.', ['Clicks And Imprs' => $clck_imprs['data']['clicks_and_impr']]);
+                                                CLickAndImprs::create([
+                                                    'b_o_s_id' => $bo->id,
+                                                    'creative_id' => $clim['creative_id'],
+                                                    'imprs' => $clim['Impressions'],
+                                                    'clicks' => $clim['Clicks'],
+                                                    'spending' => $clim['Spending'],
                                                     
-                                //                 ]);
-                                //             }
-                                //         }else{
-                                //             Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
-                                //         }
-                                //     }else {
-                                //         return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
-                                //     }
-                                // }
+                                                ]);
+                                            }
+                                        }else{
+                                            Log::warning('clicks_and_impr data is missing or not in expected format.', ['Clicks And Imprs' => $clck_imprs]);
+                                        }
+                                    }else {
+                                        return response()->json(['error' => 'Failed to fetch Clicks and Impression data'], 500);
+                                    }
+                                }
 
                                 
 
@@ -282,7 +288,7 @@ class Six6SController extends Controller
         // dd($bos);
 
         // $keys = ["adxadbdt","adcash","trafficnombdt","exoclick",  'trafnomnpop'];
-        // $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
+        $idToUsedKeywords = ['672477','673437','500658','500702','668180','668181','676083','500702', '760898',"500658","760898","382857420","402136020",'22210','852417','868539','1007305','1076509','6072336','6072337','6079867','55347','6394024','6705106','8126375','8391394','2819554','2822036','2582325','2383093','2803097','2803098','2826736','2488219','2383092','303343','3275182','3275412','21993820'];
         foreach ($bos as $bo) {
             // dd($bo->clicks_impression);
             // dd($bo);
@@ -291,39 +297,39 @@ class Six6SController extends Controller
             $impressions_data = [];
 
             // commented just for now to make a BO functional
-            // if (!empty($bo->clicks_impression)) {
-            //     // Process each clicks_impression record and add keys
-            //     foreach ($bo->clicks_impression as $impression) {
-            //         if(in_array($impression->creative_id, $idToUsedKeywords)){
-            //             // dd($this->cKeys($impression->creative_id));
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $this->cKeys($impression->creative_id),
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }else{
+            if (!empty($bo->clicks_impression)) {
+                // Process each clicks_impression record and add keys
+                foreach ($bo->clicks_impression as $impression) {
+                    if(in_array($impression->creative_id, $idToUsedKeywords)){
+                        // dd($this->cKeys($impression->creative_id));
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $this->cKeys($impression->creative_id),
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }else{
                         
-            //             $impressions_data[] = [
-            //                 'b_o_s_id' => $impression->b_o_s_id,
-            //                 'creative_id' => $impression->creative_id,
-            //                 'imprs' => $impression->imprs,
-            //                 'clicks' => $impression->clicks,
-            //                 'spending' => $impression->spending,
-            //                 // Add any additional keys you need
-            //                 'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
-            //                 'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
-            //             ];
-            //         }
-            //     }
-            // } else {
-            //     // Handle the case where $bo->clicks_impression is empty, if needed
-            //     Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
-            // }
+                        $impressions_data[] = [
+                            'b_o_s_id' => $impression->b_o_s_id,
+                            'creative_id' => $impression->creative_id,
+                            'imprs' => $impression->imprs,
+                            'clicks' => $impression->clicks,
+                            'spending' => $impression->spending,
+                            // Add any additional keys you need
+                            'nsu' => $this->campaignNsuId($impression->creative_id), // Example of an additional key
+                            'ftd' => $this->campaignFtdId($impression->creative_id), // Another additional key
+                        ];
+                    }
+                }
+            } else {
+                // Handle the case where $bo->clicks_impression is empty, if needed
+                Log::warning('CLicks and Impression is empty array [].', ['clicks_impression' => $bo->clicks_impression]);
+            }
             
 
             $dataset[] = [
@@ -370,6 +376,103 @@ class Six6SController extends Controller
             return response()->json(['error' => 'Failed to fetch FE data'], 500);
         }
         
+    }
+
+    // private function for creative_id
+    private function creativeId($cid){
+        $creative_id = [
+            's6srichpush' => [
+                'creative_id' => ['3335556', '3308090','21806290'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            's6srichads' => [
+                'creative_id' => ['3244702', '3244704','3323687','3231925','3209364','2834504','3215766'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+            's6strafficnomads' => [
+                'creative_id' => ['22215','20976','20370','20051','14416','14336','20193','20152'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://partners.trafficnomads.com/?login=adv',
+                'dashboard' => 'https://partners.trafficnomads.com/stats/index',
+                'platform' => 'trafficnomads'
+            ],
+            's6sadcash' => [
+                'creative_id' => ['385618020','381998820','325091220','383460420','382878420'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://auth.myadcash.com/',
+                'dashboard' => 'https://adcash.myadcash.com/dashboard/main',
+                'platform' => 'adcash'
+            ],
+            's6adsterrabdt' => [], //adsterra,
+            's6strafficstars' => [
+                'creative_id' => ['783524','766488','669549','518457','674463','672634'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://id.trafficstars.com/realms/trafficstars/protocol/openid-connect/auth?scope=openid&redirect_uri=http%3A%2F%2Fadmin.trafficstars.com%2Faccounts%2Fauth%2F%3Fnext%3Dhttps%3A%2F%2Fadmin.trafficstars.com%2F&response_type=code&client_id=web-app',
+                'dashboard' => 'https://admin.trafficstars.com/advertisers/campaigns/',
+                'platform' => 'trafficstars'
+            ],
+            's6shilltopads' => [],
+            's6clickadubdt' => [],
+            's6clickadubdt' => [],
+            's6daoadbdt' => [
+                'creative_id' => ['288535','285382','288362','286303'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://dao.ad/login',
+                'dashboard' => 'https://dao.ad/manage/dashboard',
+                'platform' => 'daoad'
+            ],
+            's6srichpkrpush' => [
+                'creative_id' => ['3335557', '3308531','3268064'],
+                'email' => 'priya124bi@gmail.com',
+                'password' => 'Aeem&H9)@!!!',
+                'link' => 'https://my.richads.com/login',
+                'dashboard' => 'https://my.richads.com/campaigns/create',
+                'platform' => 'richads'
+            ],
+        ];
+
+        return $creative_id[$cid];
+    }
+
+    private function cKeys($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        if($cid){
+            return $cid->keyword;
+        }else{
+            return $id;
+        }
+        
+    }
+
+    private function campaignNsuId($id){
+        // dd($id);
+        // $countNSU = FE::where()->count();
+        $cid = CidCollection::where('cid',$id)->first();
+        // if($cid){
+        //     dd($cid->keyword);
+        // }
+        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        // dd($countNSU);
+        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        return $countNSU;
+    }
+    
+    private function campaignFtdId($id){
+        $cid = CidCollection::where('cid',$id)->first();
+        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        return $countNSU;
     }
 
     // private function for currency and associated keywords

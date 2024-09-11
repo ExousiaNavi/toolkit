@@ -141,7 +141,7 @@ class AdcashScraper:
     async def select_option(self, page, cid):
         try:
             await page.fill('input[id="s2id_autogen3"]', cid)
-            await page.wait_for_selector("div.select2-result-label[role='option']")
+            await page.wait_for_selector("div.select2-result-label[role='option']", timeout=3000)
             await page.click(f"div.select2-result-label[role='option']:has-text('{cid}')")
         except Exception as e:
             logging.error(f"Error selecting option for CID '{cid}': {e}")
@@ -239,6 +239,7 @@ class AdcashScraper:
 
             footer_data = await self.extract_footer_data(table)
             footer_data['creative_id'] = cid
+            
             return footer_data
         except Exception as e:
             logging.error(f"Error extracting data for creative ID '{cid}': {e}")
@@ -250,7 +251,18 @@ class AdcashScraper:
             }
         finally:
             # Clear the selection for the next CID
-            await page.click("#s2id_detailedstatisticssearch-campaigns > ul > li.select2-search-choice > a")
+            try:
+                # Attempt to clear the campaign selection for the next CID
+                await page.click("#s2id_detailedstatisticssearch-campaigns > ul > li.select2-search-choice > a")
+            except Exception as clear_error:
+                logging.error(f"Failed to clear the selection for creative ID '{cid}': {clear_error}")
+                # Return default values if clearing fails as well
+                return {
+                    'creative_id': cid,
+                    'Impressions': '0',
+                    'Clicks': '0',
+                    'Spending': '0'
+                }
             # await clear_search_input(page, '#s2id_detailedstatisticssearch-campaigns > ul > li.select2-search-choice > a')
 
     async def clear_search_input(self, page, clear_button_selector):
@@ -264,6 +276,7 @@ class AdcashScraper:
         
         for cid in self.creative_id:
             data = await self.extract_data_for_creative_id(page, cid)
+            print(data)
             all_data.append(data)
             
         return all_data

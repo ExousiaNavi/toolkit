@@ -103,7 +103,8 @@ class DaoadAutomation:
                     logging.info("Session saved.")
             
                     if not await self.report(page):
-                        return {"status": 400, "text": "Failed to click report button."}
+                        logging.error("Failed to click report button.")
+                        continue  # Retry if report fails
                     await page.wait_for_load_state('load')
                 
                     daoad = await self.scrapping(page)
@@ -176,6 +177,8 @@ class DaoadAutomation:
 
     async def scrapping(self, page):
         n = True
+        ccid = 0
+        results = []
         try:
             await page.wait_for_load_state('networkidle')
             await asyncio.sleep(5)
@@ -184,9 +187,9 @@ class DaoadAutomation:
             await page.get_by_text("Yesterday").click()
            
             
-            results = []
+            
             for cid in self.creative_id:
-                
+                ccid = cid
                 try:
                     # Wait for the input field to be available and fill it with the value
                     await asyncio.sleep(2)
@@ -240,7 +243,7 @@ class DaoadAutomation:
                     clicks = 0
                     spending = (await page.locator('tfoot tr.text-bold.text-grey-600 td:nth-child(5)').get_attribute('data-value')).strip()
 
-                    await page.screenshot(path=f"daoad_{cid}.png", full_page=True)
+                    # await page.screenshot(path=f"daoad_{cid}.png", full_page=True)
 
                     data = {
                         'creative_id': cid,
@@ -257,14 +260,27 @@ class DaoadAutomation:
                 await page.mouse.wheel(0, -1000)
                 # await page.get_by_text("×").click()
                 # logging.info(f"Collected: {results}")
-            return results
+            
 
         except Exception as e:
             logging.error(f"An error occurred while scraping data: {str(e)}")
-            return None
-        except PlaywrightTimeoutError:
-            logging.error("Input yesterday wait timeout.")
-            return False
+            # return [
+            #     {'creative_id': ccid,
+            #     'Impressions': 0,
+            #     'Clicks': 0,
+            #     'Spending': 0,}
+            # ]
+            
+            data = {
+                        'creative_id': ccid,
+                        'Impressions': 0,
+                        'Clicks': 0,
+                        'Spending': 0,
+                        # 'Profit': profit.strip()
+                    }
+                   
+            results.append(data)
+        return results
 
     async def solve_recaptcha(self, page):
         # # Wait for the iframe to appear on the page

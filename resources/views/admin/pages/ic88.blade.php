@@ -319,7 +319,7 @@
                 //merge report on spreedsheet
                 $('#ic88_automate_report').click(function(){
                     completedTime = ''
-                    asyncRequest(`/admin/spreedsheet`, 'POST',{'currency' : ''}, 'Connecting to Spreadsheet to transfer data')
+                    asyncRequest(`/admin/ic88/spreedsheet`, 'POST',{'currency' : ''}, 'Connecting to IC88 Spreadsheet to transfer data')
                         .then(function(response) {
                             console.log(response.result)
                             let result = response.result.data

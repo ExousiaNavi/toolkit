@@ -2,15 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\IP;
+use App\Models\User;
 use App\Models\Brand;
 use App\Models\Currency;
-use App\Models\IP;
 use App\Models\Platform;
 use App\Models\PlatformKey;
-use App\Models\User;
-use Database\Factories\BrandFactory;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Factories\BrandFactory;
+use Database\Seeders\CidCollectionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -114,147 +115,93 @@ class DatabaseSeeder extends Seeder
             [
                 'brand_id' => 1,
                 'currency' => 'BDT',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 1,
                 'currency' => 'PKR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 1,
                 'currency' => 'NPR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //BJ88
             [
                 'brand_id' => 2,
                 'currency' => 'IDR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 2,
                 'currency' => 'PHP',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 2,
                 'currency' => 'KRW',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 2,
                 'currency' => 'VND',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 2,
                 'currency' => 'KHR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //SIX6s
             [
                 'brand_id' => 3,
                 'currency' => 'BDT',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 3,
                 'currency' => 'PKR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //JETTBUZZ
             [
                 'brand_id' => 4,
                 'currency' => 'BDT',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 4,
                 'currency' => 'PKR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //IC88
             [
                 'brand_id' => 5,
                 'currency' => 'CAD',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //WINRS
             [
                 'brand_id' => 6,
                 'currency' => 'PKR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 6,
                 'currency' => 'BDT',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 6,
                 'currency' => 'NPR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             //CTN
             [
                 'brand_id' => 7,
                 'currency' => 'HKD',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 7,
                 'currency' => 'MYR',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
             [
                 'brand_id' => 7,
                 'currency' => 'SGD',
-                'url' => 'https://docs.google.com/spreadsheets/d/1dkVVwuyLmvfpzYmhYVyCBK0XglN7SIc-jRMObmnt9w0/edit?gid=379053111#gid=379053111',
-                'email' => 'test@email.com',
-                'password' => 'password'
             ],
         ];
         
         foreach ($currencies as $currency) {
             Currency::factory()->create($currency);
         }
-              
+           
+        
+        //to execute CidCollection seeder
+        $this->call(CidCollectionSeeder::class);
     }
 }

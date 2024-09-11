@@ -124,7 +124,7 @@ async def automate_sheet(request: SpreedSheetRequest):
         except Exception as e:
             logger.error(f"Error processing item: {item}, Error: {str(e)}")
             raise HTTPException(status_code=400, detail=str(e))
-
+    print(f"Result: {results}")
     return {"data": results, "message": "Data processed successfully"}
 
     

@@ -71,10 +71,12 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         //send to spreedsheet
         Route::post('jeetbuzz/spreedsheet',[JeetbuzzController::class, 'Spreedsheet'])->name('jeetbuzz.spreedsheet');
 
-        //jeetbuzz
+        //ic88
         Route::get('/ic88', [Ic88Controller::class, 'index'])->name('ic88');
          //send request to fetch BO for jeetbuzz
         Route::post('ic88/bo',[Ic88Controller::class, 'ic88BO'])->name('ic88.bo');
+        //send to spreedsheet
+        Route::post('ic88/spreedsheet',[Ic88Controller::class, 'Spreedsheet'])->name('ic88.spreedsheet');
 
         //winrs
         Route::get('/winrs', [WinrsController::class, 'index'])->name('winrs');
@@ -85,6 +87,8 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::get('/ctn', [CtnController::class, 'index'])->name('ctn');
          //send request to fetch BO for jeetbuzz
         Route::post('ctn/bo',[CtnController::class, 'ctnBO'])->name('ctn.bo');
+        //send to spreedsheet
+        Route::post('ctn/spreedsheet',[CtnController::class, 'Spreedsheet'])->name('ctn.spreedsheet');
     });
 
     // User Routes

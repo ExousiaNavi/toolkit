@@ -1,6 +1,6 @@
-<div class="absolute cube-wrapper w-full h-full flex flex-col justify-center items-center z-[999]">
+<div class="absolute cube-wrapper w-full h-screen flex flex-col justify-center items-center z-[999]">
     <!-- Backdrop -->
-    <div class="backdrop w-full h-full absolute top-0 left-0 bg-black opacity-50 z-[998]"></div>
+    <div class="backdrop w-full h-[1080px] absolute top-0 left-0 bg-black opacity-50 z-[998]"></div>
 
     <!-- Loader -->
     <div class="cube-folding relative z-[9999]"> <!-- Keep loader in front of backdrop -->

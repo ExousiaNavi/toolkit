@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currencies', function (Blueprint $table) {
+        Schema::create('cid_collections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('brand_id')->constrained();
-            $table->string('currency');
+            $table->string('cid')->unique(); // The "cid" field
+            $table->string('keyword'); // The "name" field
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('currencies');
+        Schema::dropIfExists('cid_collections');
     }
 };

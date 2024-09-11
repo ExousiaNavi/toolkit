@@ -484,7 +484,7 @@
                                                                     NSU
                                                                     <span class="ms-0.5 inline-flex items-center align-middle gap-x-1.5 py-0.5 px-1.5 rounded-md text-[11px] font-medium bg-gray-800 text-white dark:bg-white dark:text-neutral-800">
                                                                         {{-- {{ $bo->fe[0]->keywords }} --}}
-                                                                        {{ $bo->fe[0]->keywords==='0' ? '0' : count($bo->fe)}}
+                                                                        {{ isset($bo->fe[0]) && $bo->fe[0]->keywords === '0' ? '0' : (isset($bo->fe) ? count($bo->fe) : '0') }}
                                                                     </span>
                                                                 </h4>
                                                                 <p class="text-sm text-gray-500 dark:text-neutral-500">
