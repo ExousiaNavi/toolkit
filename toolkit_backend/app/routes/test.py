@@ -73,6 +73,8 @@ async def automate_sheet(request: SpreedSheetRequest):
                 keyword = 'Baji (jbclickadubdt)'
             if keyword == 'jbtrafficstars':
                 keyword = 'Baji (jbtrafficstars)'
+            if keyword == 's6clickadubdt':
+                keyword = 'Six6s (s6clickadubdt)'
             bo_data = item['bo']
             # nsu = item['nsu']
             # ftd = item['ftd']

@@ -88,7 +88,7 @@ z-index: 998; /* Ensure it's behind the loader */
 /* Delay the animation for leaf2 to make the folding smoother */
 .cube-folding .leaf2::before {
   animation-delay: 0.3s;
-  background-color: #f2f2f2; /* Lighter color for this face */
+  background-color: white; /* Lighter color for this face */
 }
 
 /* Leaf 3 rotation for the cube */
@@ -99,7 +99,7 @@ z-index: 998; /* Ensure it's behind the loader */
 /* Delay the animation for leaf3 */
 .cube-folding .leaf3::before {
   animation-delay: 0.9s;
-  background-color: #f2f2f2; /* Lighter color for this face */
+  background-color: white; /* Lighter color for this face */
 }
 
 /* Leaf 4 rotation for the cube */
@@ -173,10 +173,12 @@ z-index: 998; /* Ensure it's behind the loader */
   color: var(--secondary); /* Use the secondary color */
   position: relative;
   top: 25px; /* Position the text slightly below the cubes */
-  -webkit-animation: text 0.5s ease infinite alternate; /* Bouncing text animation */
-  animation: text 0.5s ease infinite alternate;
+  /* -webkit-animation: text 0.5s ease infinite alternate; Bouncing text animation */
+  /* animation: text 0.5s ease infinite alternate; */
 }
-
+.cube-wrapper .loading:nth-child(2){
+  top: -190px;
+}
 /* Text animation keyframes */
 @keyframes text {
   100% {

@@ -74,12 +74,13 @@
     <script>
         $(document).ready(function() {
             console.log('connected...')
-            var loader = $('#loader');
-            loader.removeClass('hidden'); // Show the loader
+            
+            // var loader = $('#loader');
+            // loader.removeClass('hidden'); // Show the loader
 
-            setTimeout(() => {
-                loader.addClass('hidden')
-            }, 2000);
+            // setTimeout(() => {
+            //     loader.addClass('hidden')
+            // }, 2000);
 
             // Get CSRF token from meta tag
             var csrfToken = $('meta[name="csrf-token"]').attr('content');

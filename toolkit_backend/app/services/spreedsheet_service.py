@@ -58,6 +58,8 @@ class GoogleSheetsManager:
             return 'jbclickadubdt'
         if keyw == 'Baji (jbtrafficstars)':
             return 'jbtrafficstars'
+        if keyw == 'Six6s (s6clickadubdt)':
+            return 's6clickadubdt'
         else:
             return keyw  # or any default value you'd prefer
         

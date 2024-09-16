@@ -21,10 +21,16 @@
                             </p>
                         </div>
 
-                        
-
                         <div>
                             <div class="inline-flex gap-x-2">
+
+                                <div class="hs-dropdown relative inline-flex">
+                                    <button type="button" class="insert hs-dropdown-toggle py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+                                        {{-- <svg class="size-4 text-red-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"  viewBox="0 0 384 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg> --}}
+                                        {{ __('Manual :') }}
+                                        <span class="font-bold text-red-500">{{ $m_count }}</span>
+                                    </button>
+                                </div>
 
                                 <div class="hs-dropdown relative inline-flex">
                                     <button type="button" class="hs-dropdown-toggle py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
@@ -43,7 +49,10 @@
                                                 {{ $curr->currency }}
                                             </a> 
                                         @endforeach
-                                        
+                                        <a data-name="{{ __('manual') }}" class="f_currency border-b-2 flex items-center gap-x-3.5 py-2 px-3 text-sm text-red-500 font-bold hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700" href="#">
+                                            <svg class="size-4 text-red-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"  viewBox="0 0 384 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+                                            {{ __('Manual') }}
+                                        </a> 
                                     </div>
                                 </div>
                                 
@@ -324,9 +333,17 @@
                         <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
                             {{-- {{ $platforms }} --}}
                             @foreach ($bos as $bo)
+                            
                             {{-- {{ $bo }} --}}
                                 <tr class="@if($loop->odd) bg-green-50 dark:bg-neutral-800 @else bg-white dark:bg-neutral-900 @endif">
-
+                                    <td class="size-px whitespace-nowrap hidden">
+                                        <div class="ps-6 py-3">
+                                            <label for="hs-at-with-checkboxes-5" class="flex">
+                                                {{-- <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 32C28.7 32 0 60.7 0 96l0 64c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-64c0-35.3-28.7-64-64-64L64 32zm280 72a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm48 24a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zM64 288c-35.3 0-64 28.7-64 64l0 64c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-64c0-35.3-28.7-64-64-64L64 288zm280 72a24 24 0 1 1 0 48 24 24 0 1 1 0-48zm56 24a24 24 0 1 1 48 0 24 24 0 1 1 -48 0z"/></svg> --}}
+                                                {{ $bo->is_manual ? 'manual' : 'not' }}
+                                            </label>
+                                        </div>
+                                    </td>
                                     <td class="h-px w-40 whitespace-nowrap">
                                         <div class="px-3 py-3">
                                             <span
@@ -709,7 +726,14 @@
                                                                     </div>
                                                                 </li>
                                                             @endif
-                                                        
+                                                            {{-- <li>
+                                                                <div class="">
+                                                                    <button data-bos_username="{{ $bo->affiliate_username }}" data-bos_id="{{ $bo->id }}" class="insert bg-gray-600 px-2 text-white inline-flex items-center gap-x-2 text-sm rounded-sm hover:bg-gray-700 dark:text-neutral-200">
+                                                                        <svg class="font-bold text-slate-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 448 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z"/></svg>
+                                                                        Insert
+                                                                    </button>
+                                                                </div>
+                                                            </li> --}}
                                                         </ul>
                                                         <!-- End List -->
                                                     </div>

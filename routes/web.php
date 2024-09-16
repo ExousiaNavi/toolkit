@@ -89,6 +89,9 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
         Route::post('ctn/bo',[CtnController::class, 'ctnBO'])->name('ctn.bo');
         //send to spreedsheet
         Route::post('ctn/spreedsheet',[CtnController::class, 'Spreedsheet'])->name('ctn.spreedsheet');
+
+        // add cost, impressions and clicks
+        Route::post('cli/insert',[BajiController::class, 'insert'])->name('cli.insert');
     });
 
     // User Routes

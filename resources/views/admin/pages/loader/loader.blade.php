@@ -10,6 +10,7 @@
         <span class="leaf4"><p class="p p4" style="transform: rotate(130deg) !important; ">J</p></span>
     </div>
    <div class="flex flex-col">
-        <span class="loading relative z-[9999]" data-name="Loading">Please Wait, Loading...</span>
+        <span class="loading relative z-[9999] title" data-name="Loading"></span>
+        <span class="loading relative z-[9999] ellapse" data-name="Loading">Please Wait, Loading...</span>
    </div>
 </div>

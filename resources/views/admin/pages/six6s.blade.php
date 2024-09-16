@@ -78,7 +78,7 @@
             </div>
         </div>
     </div>
-
+    @include('admin.pages.modals.insert', ['collectionKeys'=>$collectionKeys, 'redirectedTo'=>'six6s'])
     @section('scripts')
         <script>
             console.log('connected six6s...')
@@ -86,6 +86,7 @@
                 // Get CSRF token from meta tag
                 let csrfToken = $('meta[name="csrf-token"]').attr('content');
                 let response = @json(session('result'));
+                let resend = @json(session('resend'));
                 let responseAction = @json(session()->all());
                 let completedTime = ''
                 // let testRoute = "{{ Auth::user()->role }}.test"
@@ -381,6 +382,16 @@
                 //     $('#add_currency').trigger('click')
                 // })
 
+                // trigger add brand modal
+                $('.insert').click(function(){
+                    // alert('yes')
+                    // let bosID = $(this).data('bos_id')
+                    // let bosUsername = $(this).data('bos_affiliate_username')
+                    // $('#bos_id').val(bosID)
+                    // $('#header-title-modal').val(bosUsername)
+                    $('#insert_clicks').trigger('click')
+                })
+
                 // trigger completed task button
                 $('.six6s_automate_completed').click(function(){
                     let c = $(this).data('c_type')
@@ -391,7 +402,11 @@
                     popup(responseAction.status, responseAction.title, responseAction.text, responseAction.icon, '')
                 }
                 
-
+                if(resend !== null){
+                    console.log('resend activated...')
+                    $('#ctn_automate_report').attr('onclick',triggerAutomateReportClick())
+                    $('#ctn_automate_report').trigger('click')
+                }
             })
         </script>
     @endsection

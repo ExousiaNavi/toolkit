@@ -38,9 +38,43 @@ class Six6SController extends Controller
         // dd($bo);
         $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','six6s')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
-        
-        return view('admin.pages.six6s', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        $collectionKeys = $this->manualKeys();
+        $m_count = BO::where('is_manual',true)->where('brand','six6s')->count();
+
+        return view('admin.pages.six6s', compact("m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
+
+    //manual key collections
+    private function manualKeys(){
+        // Step 1: Get BOs where is_manual is true
+       $bos = BO::where('is_manual',true)->get();
+       // Step 2: Extract affiliate_username values from the BOs
+       $boUsernames = $bos->pluck('affiliate_username')->toArray();
+       // Step 3: Get matching PlatformKey records based on affiliate_usernames
+       // $platformKeys = PlatformKey::with('platform')->whereIn('key', $boUsernames)->get();
+       $keysCollection = [
+           [
+               'platform' => 'Adsterra',
+               'currency' => 'BDT',
+               'aff_username' => 's6adsterrabdt',
+               'campaign_id' => ['1108832','1108834','972672','954289','896121'],
+           ],
+           [
+               'platform' => 'HilltopAds',
+               'currency' => 'BDT',
+               'aff_username' => 's6shilltopads',
+               'campaign_id' => ['303352','303353','300814','284207','301895','301403'],
+           ],
+       ];
+
+       // Step 4: Filter the keysCollection based on the boUsernames
+       $filteredKeysCollection = array_filter($keysCollection, function ($item) use ($boUsernames) {
+           return in_array($item['aff_username'], $boUsernames);
+       });
+
+       // Step 5: Return the filtered collection
+       return array_values($filteredKeysCollection); // Optional: Re-index the array
+   }
 
     //fetch the bo for bj88
     public function six6sBO(Request $request){
@@ -63,10 +97,21 @@ class Six6SController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['s6adsterrabdt','s6shilltopads'];
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
+
+                            // Step 1: Check if the affiliate_username already exists and was created today
+                            $existingRecord = BO::where('affiliate_username', $value['Affiliate Username'])
+                            ->whereDate('created_at', Carbon::today())
+                            ->first();
+
+                            // Step 2: If the record exists, delete it
+                            if ($existingRecord) {
+                                $existingRecord->delete();
+                            }
+
                             $bo = BO::create([
                                 'affiliate_username' => $value['Affiliate Username'],
                                 'currency' => $value['Currency'],
@@ -79,7 +124,9 @@ class Six6SController extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'six6s'
+                                'brand' => 'six6s',
+                                 // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                 'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
                             
@@ -114,9 +161,7 @@ class Six6SController extends Controller
 
                                 
                                 $pendingKeywords = [
-                                    'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt',
-                                    'admavenbdt','onclicbdtpush','tforcepushbdt','s6adsterrabdt','s6shilltopads',
-                                    's6clickadubdt','s6clickadubdt'
+                                    's6adsterrabdt','s6shilltopads'
                                 ];
                                 // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
                                 if(!in_array($value['Affiliate Username'], $pendingKeywords)){
@@ -282,6 +327,7 @@ class Six6SController extends Controller
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','six6s')
         ->where('is_merged',false)
+        ->where('is_manual',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
@@ -423,8 +469,15 @@ class Six6SController extends Controller
                 'platform' => 'trafficstars'
             ],
             's6shilltopads' => [],
-            's6clickadubdt' => [],
-            's6clickadubdt' => [],
+            's6clickadubdt' => [
+                'creative_id' => ['783524','2826818','2824737','2818688'],
+                'email' => 'ameliachoo1214@gmail.com',
+                'password' => 'Ameli@1214choo!!',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
+            
             's6daoadbdt' => [
                 'creative_id' => ['288535','285382','288362','286303'],
                 'email' => 'ameliachoo1214@gmail.com',
@@ -463,15 +516,15 @@ class Six6SController extends Controller
         // if($cid){
         //     dd($cid->keyword);
         // }
-        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        $countNSU = FE::where('keywords', $cid->keyword ?? '')->count();
         // dd($countNSU);
-        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        // Log::warning('keyword.', ['keyword' => $cid->keyword]);
         return $countNSU;
     }
     
     private function campaignFtdId($id){
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        $countNSU = FTD::where('keywords', $cid->keyword ?? '')->count();
         return $countNSU;
     }
 

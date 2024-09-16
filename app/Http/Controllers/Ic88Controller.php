@@ -39,9 +39,39 @@ class Ic88Controller extends Controller
         // dd($bo);
         $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand', 'ic88')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
-
-        return view('admin.pages.ic88', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        $collectionKeys = $this->manualKeys();
+        $m_count = BO::where('is_manual',true)->where('brand','ic88')->count();
+        return view('admin.pages.ic88', compact("m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
+
+    //manual key collections
+    private function manualKeys(){
+        // Step 1: Get BOs where is_manual is true
+       $bos = BO::where('is_manual',true)->get();
+       // Step 2: Extract affiliate_username values from the BOs
+       $boUsernames = $bos->pluck('affiliate_username')->toArray();
+       // Step 3: Get matching PlatformKey records based on affiliate_usernames
+       // $platformKeys = PlatformKey::with('platform')->whereIn('key', $boUsernames)->get();
+       $keysCollection = [
+           [
+               'platform' => 'PropellerAds',
+               'currency' => 'CAD',
+               'aff_username' => 'iccapropads',
+               'campaign_id' => ['8369634','8215035'],
+           ],
+           
+           
+           
+       ];
+
+       // Step 4: Filter the keysCollection based on the boUsernames
+       $filteredKeysCollection = array_filter($keysCollection, function ($item) use ($boUsernames) {
+           return in_array($item['aff_username'], $boUsernames);
+       });
+
+       // Step 5: Return the filtered collection
+       return array_values($filteredKeysCollection); // Optional: Re-index the array
+   }
 
     //fetch the bo for ic88
     public function ic88BO(Request $request)
@@ -65,10 +95,21 @@ class Ic88Controller extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['iccapropads'];
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
+
+                            // Step 1: Check if the affiliate_username already exists and was created today
+                            $existingRecord = BO::where('affiliate_username', $value['Affiliate Username']) ->where('brand','ic88')
+                            ->whereDate('created_at', Carbon::today())
+                            ->first();
+
+                            // Step 2: If the record exists, delete it
+                            if ($existingRecord) {
+                                $existingRecord->delete();
+                            }
+
                             $bo = BO::create([
                                 'affiliate_username' => $value['Affiliate Username'],
                                 'currency' => $value['Currency'],
@@ -81,7 +122,9 @@ class Ic88Controller extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'ic88'
+                                'brand' => 'ic88',
+                                // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
 
@@ -223,7 +266,7 @@ class Ic88Controller extends Controller
                                 'jbhilltopads',
                                 'jbclickadubdt',
                                 'jbflatadbdt',
-                                'jbadsterrabdt', 'iccapropads', 'iccaclickadu',
+                                'jbadsterrabdt', 'iccapropads',
                                 'iccadaoad'//skip for now because of 2fa
                             ];
                             $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt', 'trafficnompkr', 'exoclick'];
@@ -335,6 +378,7 @@ class Ic88Controller extends Controller
             ->select('id', 'affiliate_username', 'nsu', 'ftd', 'active_player', 'total_deposit', 'total_withdrawal', 'total_turnover', 'profit_and_loss', 'total_bonus') // Replace with the columns you want to retrieve
             ->where('brand', 'ic88')
             ->where('is_merged', false)
+            ->where('is_manual',false)
             ->whereDate('created_at', Carbon::today())
             ->latest()
             ->get();
@@ -411,7 +455,7 @@ class Ic88Controller extends Controller
 
             foreach ($filteredData as $fd) {
                 if (isset($fd['status']) && $fd['status'] === 200) {
-                    $bo = BO::where('affiliate_username', $fd['keyword'])
+                    $bo = BO::where('affiliate_username', $fd['keyword'])->where('brand','ic88')
                         ->whereDate('created_at', Carbon::today())  // Use whereDate to match only the date part of created_at
                         ->latest()  // Get the most recent record
                         ->first();  // Fetch the first record
@@ -450,7 +494,14 @@ class Ic88Controller extends Controller
                 'dashboard' => 'https://dao.ad/manage/dashboard',
                 'platform' => 'daoad'
             ],
-            'iccaclickadu' => [],
+            'iccaclickadu' => [
+                'creative_id' => ['2961975','2961976'],
+                'email' => 'aurorajbbd@gmail.com',
+                'password' => 'id888!@#%^.',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
         ];
 
         return $creative_id[$cid];
@@ -467,21 +518,15 @@ class Ic88Controller extends Controller
     }
     
     private function campaignNsuId($id){
-        // dd($id);
-        // $countNSU = FE::where()->count();
         $cid = CidCollection::where('cid',$id)->first();
-        // if($cid){
-        //     dd($cid->keyword);
-        // }
-        $countNSU = FE::where('keywords', $cid->keyword)->count();
-        // dd($countNSU);
-        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        $countNSU = FE::where('keywords', $cid->keyword ?? '')->count();
+       
         return $countNSU;
     }
     
     private function campaignFtdId($id){
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        $countNSU = FTD::where('keywords', $cid->keyword ?? '')->count();
         return $countNSU;
     }
     

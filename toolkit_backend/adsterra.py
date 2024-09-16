@@ -2,29 +2,6 @@ import asyncio
 import os
 import urllib.request
 import sys
-import logging
-import pydub
-from datetime import datetime, timedelta
-import speech_recognition as sr
-from pydub.playback import play
-
-from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
-
-# Set the path to your local FFmpeg and FFprobe
-ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
-ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
-
-# Set environment variables
-os.environ["PATH"] += os.pathsep + ffmpeg_path
-os.environ["PATH"] += os.pathsep + ffprobe_path
-
-path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
-path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
-    
-import asyncio
-import os
-import urllib.request
-import sys
 from pathlib import Path
 import logging
 import pydub
@@ -76,14 +53,38 @@ class RichadsAutomation:
 
                     if Path(self.session_file_path).exists():
                         state = json.loads(Path(self.session_file_path).read_text())
-                        browser = await p.chromium.launch(headless=False)
-                        context = await browser.new_context(storage_state=state)
+                        browser = await p.chromium.launch(
+                            headless=False,
+                            args=[
+                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                            ])
+                        context = await browser.new_context(
+                            storage_state=state,
+                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            viewport={"width": 1280, "height": 720},   # Set a common viewport size
+                            locale="en-US",                            # Set a common locale
+                            timezone_id="America/New_York",            # Match the system's timezone
+                            device_scale_factor=1,                     # Simulate common device settings
+                            is_mobile=False)     
                         page = await context.new_page()
                         await page.goto(self.dashboard)
                         logging.info("Loaded existing session.")
                     else:
-                        browser = await p.chromium.launch(headless=False)
-                        context = await browser.new_context()
+                        browser = await p.chromium.launch(
+                            headless=False,
+                            args=[
+                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                            ])
+                        context = await browser.new_context(
+                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                            viewport={"width": 1280, "height": 720},   # Set a common viewport size
+                            locale="en-US",                            # Set a common locale
+                            timezone_id="America/New_York",            # Match the system's timezone
+                            device_scale_factor=1,                     # Simulate common device settings
+                            is_mobile=False     
+                        )
                         page = await context.new_page()
                         await page.goto(self.link)
                         

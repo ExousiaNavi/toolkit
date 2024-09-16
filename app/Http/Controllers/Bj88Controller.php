@@ -43,10 +43,54 @@ class Bj88Controller extends Controller
         }, $completedTask);
 
         $platforms = Platform::with('platformKeys')->get()->toArray();
-        
-        return view('admin.pages.bj88', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        $collectionKeys = $this->manualKeys();
+        $m_count = BO::where('is_manual',true)->where('brand','bj88')->count();
+        return view('admin.pages.bj88', compact("m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
 
+     //manual key collections
+     private function manualKeys(){
+        // Step 1: Get BOs where is_manual is true
+       $bos = BO::where('is_manual',true)->get();
+       // Step 2: Extract affiliate_username values from the BOs
+       $boUsernames = $bos->pluck('affiliate_username')->toArray();
+       // Step 3: Get matching PlatformKey records based on affiliate_usernames
+       // $platformKeys = PlatformKey::with('platform')->whereIn('key', $boUsernames)->get();
+       $keysCollection = [
+           [
+               'platform' => 'Hilltopads',
+               'currency' => 'KRW',
+               'aff_username' => '88krhtopads',
+               'campaign_id' => ['314347','307282','307283'],
+           ],
+           [
+               'platform' => 'Adsterra',
+               'currency' => 'KRW',
+               'aff_username' => '88krpadsterra',
+               'campaign_id' => ['1110835','1108887','1017102'],
+           ],
+           [
+               'platform' => 'Adsterra',
+               'currency' => 'PHP',
+               'aff_username' => '88phpadsterra',
+               'campaign_id' => ['1085890','1071850','1111631','1008090','994165','994161','976448','964582'],
+           ],
+           [
+               'platform' => 'HilltopAds',
+               'currency' => 'VND',
+               'aff_username' => '88vnhtopads',
+               'campaign_id' => ['317552','307638','303432','305459','301644','301647'],
+           ],
+       ];
+
+       // Step 4: Filter the keysCollection based on the boUsernames
+       $filteredKeysCollection = array_filter($keysCollection, function ($item) use ($boUsernames) {
+           return in_array($item['aff_username'], $boUsernames);
+       });
+
+       // Step 5: Return the filtered collection
+       return array_values($filteredKeysCollection); // Optional: Re-index the array
+   }
     
     //fetch the bo for bj88
     public function bj88BO(Request $request){
@@ -69,10 +113,21 @@ class Bj88Controller extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['88krhtopads','88krpadsterra','88phpadsterra','88vnhtopads'];
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
+
+                            // Step 1: Check if the affiliate_username already exists and was created today
+                            $existingRecord = BO::where('affiliate_username', $value['Affiliate Username'])
+                            ->whereDate('created_at', Carbon::today())
+                            ->first();
+
+                            // Step 2: If the record exists, delete it
+                            if ($existingRecord) {
+                                $existingRecord->delete();
+                            }
+
                             $bo = BO::create([
                                 'affiliate_username' => $value['Affiliate Username'],
                                 'currency' => $value['Currency'],
@@ -85,7 +140,9 @@ class Bj88Controller extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'bj88'
+                                'brand' => 'bj88',
+                                 // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                 'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
                             // Fetch data from the second platform using the affiliate username
@@ -117,8 +174,8 @@ class Bj88Controller extends Controller
                                 $pendingKeywords = [
                                     'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads',
                                     'trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt',
-                                    '88idflatad','88idcadu','88phpadsterra','88phclickadu','88phflatad','88krhtopads',
-                                    '88krclickadu','88krpadsterra','88vnhtopads','88vnflatad','88vnclickadu'
+                                    '88idflatad','88phpadsterra','88phflatad','88krhtopads',
+                                    '88krpadsterra','88vnhtopads','88vnflatad'
                                 ];
                                 $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
                                 if(!in_array($value['Affiliate Username'], $pendingKeywords)){
@@ -287,7 +344,14 @@ class Bj88Controller extends Controller
                 'platform' => 'richads'
             ],
             '88idflatad' => [],
-            '88idcadu' => [],//clickadu
+            '88idcadu' => [
+                'creative_id' => ['2976321','2947550'],
+                'email' => 'apakhabar8888@gmail.com',
+                'password' => 'Khabarbaik8888.!@#$%^',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],//clickadu
             '88idriadspush' => [
                 'creative_id' => ['3316498', '3316496', '3316494','3316493','3316491','3316490','3316483'],
                 'email' => 'apakhabar8888@gmail.com',
@@ -313,7 +377,14 @@ class Bj88Controller extends Controller
                 'dashboard' => 'https://admin.trafficstars.com/advertisers/campaigns/',
                 'platform' => 'trafficstars'
             ],
-            '88phclickadu' => [],//clickadu
+            '88phclickadu' => [
+                'creative_id' => ['3049539','2885938','2836898','2826858'],
+                'email' => 'seri1212yoon@gmail.com',
+                'password' => 'yoon1212seri!!*!@',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],//clickadu
             '88phflatad' => [],
             '88phadxad' => [
                 'creative_id' => ['59694','59248','55756'],
@@ -332,7 +403,14 @@ class Bj88Controller extends Controller
                 'dashboard' => 'https://partners.trafficnomads.com/stats/index',
                 'platform' => 'trafficnomads'
             ],
-            '88krclickadu' => [],//clickadu
+            '88krclickadu' => [
+                'creative_id' => ['2978611','2882275'],
+                'email' => 'bj88krw.sm@gmail.com',
+                'password' => 'bj88Krw888!!@',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],//clickadu
             '88krpadsterra' => [],//adsterra
             '88vnrichads' => [
                 'creative_id' => ['3268845','3233017','3216750','3216781'],
@@ -352,7 +430,14 @@ class Bj88Controller extends Controller
                 'platform' => 'trafficnomads'
             ],
             '88vnflatad' => [],
-            '88vnclickadu' => [],
+            '88vnclickadu' => [
+                'creative_id' => ['2885928','2555207','2555190','2821990','2821993'],
+                'email' => 'bj88vnd.sm@gmail.com',
+                'password' => 'bj88Vn126!!*1',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
             '88khdaopush' => [
                 'creative_id' => ['322372','301903'],
                 'email' => 'bj88khr.sm1@gmail.com',
@@ -392,6 +477,7 @@ class Bj88Controller extends Controller
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','bj88')
         ->where('is_merged',false)
+        ->where('is_manual',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
@@ -405,6 +491,7 @@ class Bj88Controller extends Controller
             '6079867','55347','6394024','6705106','8126375','8391394','2819554',
             '2822036','2582325','2383093','2803097','2803098','2826736','2488219',
             '2383092','303343','3275182','3275412','21993820'];
+            
         foreach ($bos as $bo) {
             // dd($bo->clicks_impression);
             // dd($bo);
@@ -512,15 +599,15 @@ class Bj88Controller extends Controller
         // if($cid){
         //     dd($cid->keyword);
         // }
-        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        $countNSU = FE::where('keywords', $cid->keyword ?? '')->count();
         // dd($countNSU);
-        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        // Log::warning('keyword.', ['keyword' => $cid->keyword]);
         return $countNSU;
     }
     
     private function campaignFtdId($id){
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        $countNSU = FTD::where('keywords', $cid->keyword ?? '')->count();
         return $countNSU;
     }
     // private function for currency and associated keywords

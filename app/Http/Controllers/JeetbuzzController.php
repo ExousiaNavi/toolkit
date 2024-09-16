@@ -37,9 +37,55 @@ class JeetbuzzController extends Controller
         // dd($bo);
         $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','jeetbuzz')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
-        
-        return view('admin.pages.jeetbuzz', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        $collectionKeys = $this->manualKeys();
+        $m_count = BO::where('is_manual',true)->where('brand','jeetbuzz')->count();
+        return view('admin.pages.jeetbuzz', compact("m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
+
+    //manual key collections
+    private function manualKeys(){
+        // Step 1: Get BOs where is_manual is true
+       $bos = BO::where('is_manual',true)->get();
+       // Step 2: Extract affiliate_username values from the BOs
+       $boUsernames = $bos->pluck('affiliate_username')->toArray();
+       // Step 3: Get matching PlatformKey records based on affiliate_usernames
+       // $platformKeys = PlatformKey::with('platform')->whereIn('key', $boUsernames)->get();
+       $keysCollection = [
+           [
+               'platform' => 'Adsterra',
+               'currency' => 'BDT',
+               'aff_username' => 'jbadsterrabdt',
+               'campaign_id' => ['1076538','1007324','1007324','1007325','972649','969862','954217','954218','864193','969863','864192'],
+           ],
+           [
+               'platform' => 'HilltopAds',
+               'currency' => 'BDT',
+               'aff_username' => 'jbhilltopads',
+               'campaign_id' => ['303511','303514','302970','300777','300774','278447','278458','301894','301384'],
+           ],
+           [
+               'platform' => 'TrafficShop',
+               'currency' => 'BDT',
+               'aff_username' => 'jbtrafficshop',
+               'campaign_id' => ['102834'],
+           ],
+           [
+               'platform' => 'TrafficShop',
+               'currency' => 'BDT',
+               'aff_username' => 'jbpktfshop',
+               'campaign_id' => ['111666'],
+           ],
+
+       ];
+
+       // Step 4: Filter the keysCollection based on the boUsernames
+       $filteredKeysCollection = array_filter($keysCollection, function ($item) use ($boUsernames) {
+           return in_array($item['aff_username'], $boUsernames);
+       });
+
+       // Step 5: Return the filtered collection
+       return array_values($filteredKeysCollection); // Optional: Re-index the array
+   }
 
     //fetch the bo for bj88
     public function jeetbuzzBO(Request $request){
@@ -62,7 +108,7 @@ class JeetbuzzController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['jbhilltopads','jbtrafficshop','jbadsterrabdt','jbpktfshop'];
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
@@ -78,7 +124,9 @@ class JeetbuzzController extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'jeetbuzz'
+                                'brand' => 'jeetbuzz',
+                                 // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                 'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
                             
@@ -116,7 +164,7 @@ class JeetbuzzController extends Controller
                                     'adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt',
                                     'admavenbdt','onclicbdtpush','tforcepushbdt','s6adsterrabdt','s6shilltopads',
                                     's6clickadubdt','s6clickadubdt','jbpktfshop','jbpkflatad','jbtrafficshop',
-                                    'jbhilltopads','jbclickadubdt','jbflatadbdt','jbadsterrabdt'
+                                    'jbhilltopads','jbflatadbdt','jbadsterrabdt'
                                 ];
                                 // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
                                 if(!in_array($value['Affiliate Username'], $pendingKeywords)){
@@ -319,7 +367,14 @@ class JeetbuzzController extends Controller
             ],
             'jbadsterrabdt' => [],
             'jbflatadbdt' => [],
-            'jbclickadubdt' => [],
+            'jbclickadubdt' => [
+                'creative_id' => ['3004057','3004054','2903259','2884985','2838395','2824718','2818693','2826091'],
+                'email' => 'mediaads@jeetbuzz.com',
+                'password' => 'Jbuzz09876!',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
             'jbtrafficstars' => [
                 'creative_id' => ['766473', '684234','669425','669413','502015','502017','674459','672589','20151'],
                 'email' => 'mediaads@jeetbuzz.com',
@@ -370,6 +425,7 @@ class JeetbuzzController extends Controller
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','jeetbuzz')
         ->where('is_merged',false)
+        ->where('is_manual',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
@@ -483,15 +539,15 @@ class JeetbuzzController extends Controller
         // if($cid){
         //     dd($cid->keyword);
         // }
-        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        $countNSU = FE::where('keywords', $cid->keyword ?? '')->count();
         // dd($countNSU);
-        Log::warning('keyword.', ['keyword' => $cid->keyword]);
+        // Log::warning('keyword.', ['keyword' => $cid->keyword]);
         return $countNSU;
     }
     
     private function campaignFtdId($id){
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        $countNSU = FTD::where('keywords', $cid->keyword ?? '')->count();
         return $countNSU;
     }
 

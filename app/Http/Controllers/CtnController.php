@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\FE;
 use App\Models\FTD;
 use App\Models\Platform;
+use App\Models\PlatformKey;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -35,13 +36,48 @@ class CtnController extends Controller
         $currencies = Currency::where('brand_id', 7)->get();
         // $bo = BO::with(['fe','ftds', 'clicks_impression'])->whereDate('created_at', Carbon::today())->latest()->paginate(10);
         $bo = BO::with(['fe','ftds', 'clicks_impression'])->where('brand','ctn')->latest()->paginate(10);
+        $m_count = BO::where('is_manual',true)->count();
         // dd($bo);
         $completedTask = BO::whereDate('created_at', Carbon::today())->where('brand','ctn')->distinct()->pluck('currency')->toArray();
         $platforms = Platform::with('platformKeys')->get()->toArray();
-        
-        return view('admin.pages.ctn', compact("currencies", 'bo', 'username', 'completedTask', 'platforms'));
+
+        $collectionKeys = $this->manualKeys();
+        return view('admin.pages.ctn', compact("currencies", 'bo', 'username', 'completedTask', 'platforms','m_count','collectionKeys'));
     }
 
+    //manual key collections
+    private function manualKeys(){
+         // Step 1: Get BOs where is_manual is true
+        $bos = BO::where('is_manual',true)->get();
+        // Step 2: Extract affiliate_username values from the BOs
+        $boUsernames = $bos->pluck('affiliate_username')->toArray();
+        // Step 3: Get matching PlatformKey records based on affiliate_usernames
+        // $platformKeys = PlatformKey::with('platform')->whereIn('key', $boUsernames)->get();
+        $keysCollection = [
+            [
+                'platform' => 'PropellerAds',
+                'currency' => 'HKD',
+                'aff_username' => 'cthkpropadpop',
+                'campaign_id' => ['8348346'],
+            ],
+            [
+                'platform' => 'Adsterra',
+                'currency' => 'HKD',
+                'aff_username' => 'cthkadsterra',
+                'campaign_id' => ['1068991','1068992','1027117','1027116']
+            ],
+            
+            
+        ];
+
+        // Step 4: Filter the keysCollection based on the boUsernames
+        $filteredKeysCollection = array_filter($keysCollection, function ($item) use ($boUsernames) {
+            return in_array($item['aff_username'], $boUsernames);
+        });
+
+        // Step 5: Return the filtered collection
+        return array_values($filteredKeysCollection); // Optional: Re-index the array
+    }
     //fetch the bo for bj88
     public function ctnBO(Request $request){
         ini_set('max_execution_time', 1200); // Increase to 10 minutes
@@ -63,10 +99,21 @@ class CtnController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['cthkadsterra','cthkpropadpop'];  // Array of usernames to check
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
+
+                            // Step 1: Check if the affiliate_username already exists and was created today
+                            $existingRecord = BO::where('affiliate_username', $value['Affiliate Username'])
+                            ->whereDate('created_at', Carbon::today())
+                            ->first();
+
+                            // Step 2: If the record exists, delete it
+                            if ($existingRecord) {
+                                $existingRecord->delete();
+                            }
+
                             $bo = BO::create([
                                 'affiliate_username' => $value['Affiliate Username'],
                                 'currency' => $value['Currency'],
@@ -79,7 +126,9 @@ class CtnController extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'ctn'
+                                'brand' => 'ctn',
+                                // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
                             
@@ -91,7 +140,7 @@ class CtnController extends Controller
                                 'admavenbdt','onclicbdtpush','tforcepushbdt','s6adsterrabdt','s6shilltopads',
                                 's6clickadubdt','s6clickadubdt','jbpktfshop','jbpkflatad','jbtrafficshop',
                                 'jbhilltopads','jbclickadubdt','jbflatadbdt','jbadsterrabdt',
-                                'ctsgcadupop','ctmypropads','cthkpropadpop','cthkadsterra','cthkclickadu',
+                                'ctmypropads','cthkpropadpop','cthkadsterra',
                                 'ctmydaoad','ctsgdaopop'//skipped for now because of 2fa
                             ];
                             // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
@@ -321,6 +370,7 @@ class CtnController extends Controller
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','ctn')
         ->where('is_merged',false)
+        ->where('is_manual',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
@@ -428,7 +478,14 @@ class CtnController extends Controller
                 'dashboard' => 'https://my.richads.com/campaigns/create',
                 'platform' => 'richads'
             ],
-            'cthkclickadu' => [],
+            'cthkclickadu' => [
+                'creative_id' => ['3016910','3016909','2992415','2903883'],
+                'email' => 'aurorajbbd@gmail.com',
+                'password' => 'id888!@#%^.',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
             'cthkadsterra' => [],
             'cthkpropadpop' => [],
             'ctmyrichads' => [
@@ -473,7 +530,14 @@ class CtnController extends Controller
                 'dashboard' => 'https://td.adxad.com/auth/login?lang=en',
                 'platform' => 'adxad'
             ],
-            'ctsgcadupop' => [],
+            'ctsgcadupop' => [
+                'creative_id' => ['3067911'],
+                'email' => 'ylyssashoyon@gmail.com',
+                'password' => 'B@j!qwe@6666',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
         ];
 
         return $creative_id[$cid];

@@ -1,4 +1,4 @@
-use App\Http\Controllers\CtnController;
+{{-- use App\Http\Controllers\CtnController; --}}
 
 <x-app-layout>
     <!-- Content -->
@@ -11,7 +11,7 @@ use App\Http\Controllers\CtnController;
                     <span class="text-sm">This is the available currency for automation.</span>
                 </div>
                 <div>
-                    <a id="ctn_automate" class="ctn_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                    <a id="ctn_automate" class="ctn_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:bg-green-700 disabled:opacity-50 disabled:pointer-events-none"
                         href="#">
                         <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
                             <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
@@ -81,6 +81,7 @@ use App\Http\Controllers\CtnController;
         </div>
     </div>
 
+    @include('admin.pages.modals.insert', ['collectionKeys'=>$collectionKeys, 'redirectedTo'=>'ctn'])
     @section('scripts')
         <script>
             console.log('connected ctn...')
@@ -88,11 +89,10 @@ use App\Http\Controllers\CtnController;
                 // Get CSRF token from meta tag
                 let csrfToken = $('meta[name="csrf-token"]').attr('content');
                 let response = @json(session('result'));
+                let resend = @json(session('resend'));
                 let responseAction = @json(session()->all());
                 let completedTime = ''
                 // let testRoute = "{{ Auth::user()->role }}.test"
-                console.log(responseAction)
-
                 
                 const pre_popup = (status,title, text, icon, data) => {
                     
@@ -378,7 +378,23 @@ use App\Http\Controllers\CtnController;
 
                 });
 
+                //for testing only
+                $('#ctn_automate_report').click(function(){
+                    completedTime = '';
 
+                        // Make the async request
+                        asyncRequest(`/admin/ctn/spreedsheet`, 'POST', {'currency' : ''}, 'Connecting to Spreadsheet to transfer data')
+                            .then(function(response) {
+                                console.log(response.result);
+                                let result = response.result.data;
+
+                                // Show the popup with the response data
+                                popup2(result[0].status, result[0].title, result[0].text, result[0].icon, completedTime, result, true);
+                            })
+                            .catch(function(error) {
+                                console.error('Error:', error);
+                            });
+                })
                 //merge report on spreedsheet
                 // Define a function that binds and triggers the click event
                 const triggerAutomateReportClick = () => {
@@ -399,12 +415,16 @@ use App\Http\Controllers\CtnController;
                             });
                 }
 
-               
+                // $('#insert_clicks').trigger('click')//debiguung 
                 // trigger add brand modal
-                // $('#baji_add_currency').click(function(){
-                //     // alert('yes')
-                //     $('#add_currency').trigger('click')
-                // })
+                $('.insert').click(function(){
+                    // alert('yes')
+                    // let bosID = $(this).data('bos_id')
+                    // let bosUsername = $(this).data('bos_affiliate_username')
+                    // $('#bos_id').val(bosID)
+                    // $('#header-title-modal').val(bosUsername)
+                    $('#insert_clicks').trigger('click')
+                })
 
                 // trigger completed task button
                 $('.ctn_automate_completed').click(function(){
@@ -415,6 +435,11 @@ use App\Http\Controllers\CtnController;
                 
                 if(responseAction.status != undefined){
                     popup(responseAction.status, responseAction.title, responseAction.text, responseAction.icon, '')
+                }
+
+                if(resend !== null){
+                    $('#ctn_automate_report').attr('onclick',triggerAutomateReportClick())
+                    $('#ctn_automate_report').trigger('click')
                 }
                 
 

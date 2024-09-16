@@ -55,10 +55,21 @@ class BackendController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-
+                $manual_affiliates = ['adsterra','propadsbdt','hilltopads'];
                 foreach ($data as $item) {
                     if (isset($item['bo']) && is_array($item['bo'])) {
                         foreach ($item['bo'] as $key => $value) {
+
+                            // Step 1: Check if the affiliate_username already exists and was created today
+                            $existingRecord = BO::where('affiliate_username', $value['Affiliate Username'])->where('brand','baji')
+                            ->whereDate('created_at', Carbon::today())
+                            ->first();
+
+                            // Step 2: If the record exists, delete it
+                            if ($existingRecord) {
+                                $existingRecord->delete();
+                            }
+
                             $bo = BO::create([
                                 'affiliate_username' => $value['Affiliate Username'],
                                 'currency' => $value['Currency'],
@@ -71,7 +82,9 @@ class BackendController extends Controller
                                 'profit_and_loss' => $value['Total Profit & Loss'],
                                 'total_bonus' => $value['Total Bonus'],
                                 'target_date' => Carbon::yesterday()->toDateString(),
-                                'brand' => 'baji'
+                                'brand' => 'baji',
+                                 // Check if the Affiliate Username is in the list and set is_manual accordingly
+                                 'is_manual' => in_array($value['Affiliate Username'] ?? false, $manual_affiliates),
                             ]);
 
                             
@@ -103,8 +116,10 @@ class BackendController extends Controller
                                 //Request for Imprssions and Clicks
                                 //no cost and impression
                                 //'richads','richadspush','richadspkr','richadspkpush', 
-                                $pendingKeywords = ['adsterra','flatadbdt','propadsbdt','clickadu','hilltopads','trafforcebdt','admavenbdt','onclicbdtpush','tforcepushbdt'];
-                                $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
+                                $pendingKeywords = [
+                                    'adsterra','flatadbdt','propadsbdt','hilltopads','trafforcebdt',
+                                    'admavenbdt','onclicbdtpush','tforcepushbdt', 'daopkpush','daoadpkr',''];
+                                $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick','daonppop',''];
                                 if(!in_array($value['Affiliate Username'], $pendingKeywords)){
                                     $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
                                     $clicks_response = Http::timeout(1200)->post($this->url_cai, [
@@ -270,6 +285,7 @@ class BackendController extends Controller
         ->select('id','affiliate_username', 'nsu', 'ftd', 'active_player','total_deposit','total_withdrawal','total_turnover','profit_and_loss','total_bonus') // Replace with the columns you want to retrieve
         ->where('brand','baji')
         ->where('is_merged',false)
+        ->where('is_manual',false)
         ->whereDate('created_at', Carbon::today())
         ->latest()
         ->get();
@@ -337,7 +353,7 @@ class BackendController extends Controller
             // dd($filteredData);
             foreach ($filteredData as $fd) {
                 if($fd['status'] === 200){
-                    $bo = BO::where('affiliate_username', $fd['keyword'])
+                    $bo = BO::where('affiliate_username', $fd['keyword'])->where('brand','baji')
                                 ->whereDate('created_at', Carbon::today())  // Use whereDate to match only the date part of created_at
                                 ->latest()  // Get the most recent record
                                 ->first();  // Fetch the first record
@@ -458,7 +474,14 @@ class BackendController extends Controller
                 'dashboard' => 'https://my.richads.com/campaigns/create',
                 'platform' => 'propellerads'
             ],
-            'clickadu' => [],
+            'clickadu' => [
+                'creative_id' => ['2383092','2488219','2826736','2803098','2803097','2383093','2582325','2822036','2819554'],
+                'email' => 'bo.cc@chengyi-1.com',
+                'password' => 'B@j!09876**1',
+                'link' => 'https://www.clickadu.com/',
+                'dashboard' => 'https://adv.clickadu.com/dashboard',
+                'platform' => 'clickadu'
+            ],
             'hilltopads' => [],
             'trafforcebdt' => [],
             'admavenbdt' => [],
@@ -602,7 +625,7 @@ class BackendController extends Controller
         //     '319269' => "daoFstDptBnp",
         // ];
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FE::where('keywords', $cid->keyword)->count();
+        $countNSU = FE::where('keywords', $cid->keyword ?? '')->count();
         // dd($countNSU);
         return $countNSU;
     }
@@ -781,7 +804,7 @@ class BackendController extends Controller
         //     '319269' => "daoFstDptBnp",
         // ];
         $cid = CidCollection::where('cid',$id)->first();
-        $countNSU = FTD::where('keywords', $cid->keyword)->count();
+        $countNSU = FTD::where('keywords', $cid->keyword ?? '')->count();
         return $countNSU;
     }
 

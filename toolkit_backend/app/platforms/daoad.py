@@ -1,25 +1,25 @@
-import asyncio
-import os
-import urllib.request
-import sys
-import logging
-import pydub
-from datetime import datetime, timedelta
-import speech_recognition as sr
-from pydub.playback import play
+# import asyncio
+# import os
+# import urllib.request
+# import sys
+# import logging
+# import pydub
+# from datetime import datetime, timedelta
+# import speech_recognition as sr
+# from pydub.playback import play
 
-from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+# from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
-# Set the path to your local FFmpeg and FFprobe
-ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
-ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
+# # Set the path to your local FFmpeg and FFprobe
+# ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
+# ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
 
-# Set environment variables
-os.environ["PATH"] += os.pathsep + ffmpeg_path
-os.environ["PATH"] += os.pathsep + ffprobe_path
+# # Set environment variables
+# os.environ["PATH"] += os.pathsep + ffmpeg_path
+# os.environ["PATH"] += os.pathsep + ffprobe_path
 
-path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
-path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
+# path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
+# path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
     
 import asyncio
 import os
@@ -76,14 +76,36 @@ class DaoadAutomation:
 
                     if Path(self.session_file_path).exists():
                         state = json.loads(Path(self.session_file_path).read_text())
-                        browser = await p.chromium.launch(headless=False)
-                        context = await browser.new_context(storage_state=state)
+                        browser = await p.chromium.launch(
+                            headless=False,
+                            args=[
+                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                            ]
+                            )
+                        context = await browser.new_context(storage_state=state,
+                                                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                                                            viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                                                            locale="en-US",                            # Set locale to match your regular browsing locale
+                                                            timezone_id="America/New_York" 
+                                                            )
                         page = await context.new_page()
                         await page.goto(self.dashboard)
                         logging.info("Loaded existing session.")
                     else:
-                        browser = await p.chromium.launch(headless=False)
-                        context = await browser.new_context()
+                        browser = await p.chromium.launch(
+                            headless=False,
+                            args=[
+                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                            ]
+                            )
+                        context = await browser.new_context(
+                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                            viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                            locale="en-US",                            # Set locale to match your regular browsing locale
+                            timezone_id="America/New_York" 
+                        )
                         page = await context.new_page()
                         await page.goto(self.link)
                         
@@ -391,7 +413,7 @@ class DaoadAutomation:
                 raise Exception("Audio challenge failed due to timeout.")
                 
 
-# Example usage in another file
+# # Example usage in another file
 # if __name__ == "__main__":
 #     automation = DaoadAutomation(
 #         keywords="daoadpkr",
@@ -400,7 +422,7 @@ class DaoadAutomation:
 #         link="https://dao.ad/login",
 #         dashboard="https://dao.ad/manage/dashboard",
 #         platform="daoad",
-#         creative_id=['315278']
+#         creative_id=['286293', '286733', '284858', '285126', '287030', '288497', '315278']
 #     )
 #     asyncio.run(automation.run())
 

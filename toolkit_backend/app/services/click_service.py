@@ -15,6 +15,7 @@ from app.platforms.traffinomads import TrafficNomadsAutomation
 from app.platforms.exoclick import ExoclickAutomation
 from app.platforms.richads import RichadsAutomation
 from app.platforms.daoad import DaoadAutomation
+from app.platforms.clickadu import ClickAduAutomation
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +38,29 @@ class ClickAutomation:
         yesterday = datetime.now() - timedelta(days=1)
         return yesterday.year, yesterday.month, yesterday.day
     
+    # async def get_scraper(self):
+    #     # Dictionary mapping platform names to their corresponding classes
+    #     platform_scrapers = {
+    #         'adcash': AdcashScraper,
+    #         'adxad': AdxadScraper,
+    #         'trafficstars': TrafficStarsAutomation,
+    #         'trafficnomads': TrafficNomadsAutomation,
+    #         'exoclick': ExoclickAutomation,
+    #         'richads': RichadsAutomation,
+    #         'daoad': DaoadAutomation,
+    #         'clickadu': ClickAduAutomation
+    #     }
+
+    #     # Get the scraper class based on the platform name
+    #     ScraperClass = platform_scrapers.get(self.platform)
+
+    #     if ScraperClass:
+    #         # Return an instance of the appropriate scraper class
+    #         return ScraperClass(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+    #     else:
+    #         raise ValueError(f"Unsupported platform: {self.platform}")
+        
+        
     async def fetch_info(self):
         data = {}
         scraper = None  # Initialize scraper to None
@@ -57,7 +81,9 @@ class ClickAutomation:
                 scraper = RichadsAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
             elif self.platform == 'daoad':
                 scraper = DaoadAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
-
+            elif self.platform == 'clickadu':
+                scraper = ClickAduAutomation(self.keywords, self.email, self.password, self.link, self.creative_id, self.dashboard, self.platform)
+            # scraper = self.get_scraper()
             # Ensure scraper was initialized before trying to use it
             if scraper:
                 result = await scraper.run()

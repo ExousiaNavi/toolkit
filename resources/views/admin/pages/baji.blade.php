@@ -81,6 +81,7 @@
 
     {{-- modals collection --}}
     {{-- @include('admin.pages.modals.add_currency') --}}
+    @include('admin.pages.modals.insert', ['collectionKeys'=>$collectionKeys, 'redirectedTo'=>'baji'])
     @section('scripts')
         <script>
             console.log('connected baji...')
@@ -88,6 +89,7 @@
                 // Get CSRF token from meta tag
                 let csrfToken = $('meta[name="csrf-token"]').attr('content');
                 let response = @json(session('result'));
+                let resend = @json(session('resend'));
                 let responseAction = @json(session()->all());
                 let completedTime = ''
                 // let testRoute = "{{ Auth::user()->role }}.test"
@@ -209,7 +211,7 @@
                     
                     // Store the Swal instance so you can close it later
                     const swalInstance = Swal.fire({
-                        title: "Automation is in process!",
+                        title: "Automation is in progress!",
                         html: htmls,
                         timerProgressBar: true,
                         allowOutsideClick: false,  // Prevent closing when clicking outside
@@ -247,10 +249,18 @@
                 const asyncRequest = (url, method, data, message) => {
                     return new Promise(function(resolve, reject) {
                         // Show loader
-                        const swalInstance = loader(`<div class="bg-slate-100 p-1 flex flex-col gap-2">
+                        const swalInstance = loader(`
+                                <div class="bg-slate-50 p-1 flex flex-col justify-center items-center gap-2 h-[300px]">
+                                    <div class="cube-folding mb-4">
+                                        <span class="leaf1"><p class="p p1 -rotate-45">B</p></span>
+                                        <span class="leaf2"><p class="p p2" style="transform: rotate(220deg) !important; color:rgb(50, 182, 50);">A</p></span>
+                                        <span class="leaf3"><p class="p p3" style="transform: rotate(220deg) !important; color:rgb(50, 182, 50);">I</p></span>
+                                        <span class="leaf4"><p class="p p4" style="transform: rotate(130deg) !important; ">J</p></span>
+                                    </div> 
                                     <span class="text-green-500">${message}...</span>
                                     <span class="text-slate-500"><b></b></span>
-                                </div>`);
+                                </div>`
+                            );
                         $.ajax({
                             url: url,
                             method: method,
@@ -396,6 +406,7 @@
                             });
                 })
 
+                
                 //merge report on spreedsheet
                // Define a function that binds and triggers the click event
                const triggerAutomateReportClick = () => {
@@ -415,6 +426,16 @@
                                 console.error('Error:', error);
                             });
                 }
+
+                // trigger add brand modal
+                $('.insert').click(function(){
+                    // alert('yes')
+                    // let bosID = $(this).data('bos_id')
+                    // let bosUsername = $(this).data('bos_affiliate_username')
+                    // $('#bos_id').val(bosID)
+                    // $('#header-title-modal').val(bosUsername)
+                    $('#insert_clicks').trigger('click')
+                })
                 // trigger add brand modal
                 $('#baji_add_currency').click(function(){
                     // alert('yes')
