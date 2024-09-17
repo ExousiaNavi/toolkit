@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
+use App\Models\BoAccount;
 use App\Models\CidCollection;
 use App\Models\CLickAndImprs;
 use App\Models\Currency;
@@ -86,11 +87,13 @@ class CtnController extends Controller
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
+            $boaccount = BoAccount::where('brand','ctn')->first();
+            // dd($boaccount);
             $response = Http::timeout(3600)->post($this->url, [
-                'email' => 'exousianavi',
-                'password' => 'DataAnalyst2024',
-                'link' => 'https://citicps.com/page/manager/login.jsp',
-                'fe_link' => '',
+                'email' => $boaccount->email,
+                'password' => $boaccount->password,
+                'link' => $boaccount->link,
+                'fe_link' => $boaccount->fe_link,
                 'currency' => $currencyData['index'],
                 'keyword' => $currencyData['keywords']
             ]);

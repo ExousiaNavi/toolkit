@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
+use App\Models\BoAccount;
 use App\Models\CidCollection;
 use App\Models\CLickAndImprs;
 use App\Models\FE;
-use App\Models\FTD;
 // use App\Models\Platform;
-use Carbon\Carbon;
+use App\Models\FTD;
 // use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+// use Illuminate\Support\Facades\Redirect;
+// use Symfony\Component\Process\Exception\ProcessFailedException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-// use Illuminate\Support\Facades\Redirect;
-// use Symfony\Component\Process\Exception\ProcessFailedException;
-use Illuminate\Http\Client\RequestException;
-use Illuminate\Http\Client\ConnectionException;
 // use Symfony\Component\Process\Process;
 class BackendController extends Controller
 {
@@ -42,11 +43,13 @@ class BackendController extends Controller
 
         try {
             // Fetch data from the first platform
+            $boaccount = BoAccount::where('brand','baji')->first();
+            // dd($boaccount);
             $response = Http::timeout(3600)->post($this->url, [
-                'email' => 'exousianavi',
-                'password' => 'DataAnalys2024',
-                'link' => 'https://www.1xoffer.com/page/manager/login.jsp',
-                'fe_link' => 'https://bajipartners.com/page/affiliate/login.jsp',
+                'email' => $boaccount->email,
+                'password' => $boaccount->password,
+                'link' => $boaccount->link,
+                'fe_link' => $boaccount->fe_link,
                 'currency' => $currencyData['index'],
                 'keyword' => $currencyData['keywords']
             ]);

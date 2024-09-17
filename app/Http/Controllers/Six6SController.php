@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
+use App\Models\BoAccount;
 use App\Models\CidCollection;
 use App\Models\CLickAndImprs;
 use App\Models\Currency;
@@ -84,11 +85,13 @@ class Six6SController extends Controller
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
+            $boaccount = BoAccount::where('brand','six6s')->first();
+            // dd($boaccount);
             $response = Http::timeout(3600)->post($this->url, [
-                'email' => 'exousianavi',
-                'password' => 'DataAnalyst2024',
-                'link' => 'https://six6scps.com/page/manager/login.jsp',
-                'fe_link' => 'https://6saffiliates.com/page/affiliate/login.jsp',
+                'email' => $boaccount->email,
+                'password' => $boaccount->password,
+                'link' => $boaccount->link,
+                'fe_link' => $boaccount->fe_link,
                 'currency' => $currencyData['index'],
                 'keyword' => $currencyData['keywords']
             ]);

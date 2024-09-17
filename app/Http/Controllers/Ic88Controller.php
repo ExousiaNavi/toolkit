@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BO;
+use App\Models\BoAccount;
 use App\Models\CidCollection;
 use App\Models\CLickAndImprs;
 use App\Models\Currency;
@@ -22,11 +23,7 @@ class Ic88Controller extends Controller
     protected $url_fe = 'http://127.0.0.1:8082/api/fe/data'; //fe
     protected $url_cai = 'http://127.0.0.1:8082/api/cli/clicks'; //fe
     protected $url_sp = 'http://127.0.0.1:8082/api/cli/automate-spreedsheet'; //fe
-    protected $credentials = [
-        'email' => 'exousianavi',
-        'password' => 'DataAnalys2024',
-        'link' => 'https://www.1xoffer.com/page/manager/login.jsp',
-    ];
+    
 
     //index
     public function index()
@@ -82,11 +79,13 @@ class Ic88Controller extends Controller
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
+            $boaccount = BoAccount::where('brand','ic88')->first();
+            // dd($boaccount);
             $response = Http::timeout(3600)->post($this->url, [
-                'email' => 'exousianavi',
-                'password' => 'DataAnalyst2024',
-                'link' => 'https://interbo88.com/page/manager/login.jsp',
-                'fe_link' => '',
+                'email' => $boaccount->email,
+                'password' => $boaccount->password,
+                'link' => $boaccount->link,
+                'fe_link' => $boaccount->fe_link,
                 'currency' => $currencyData['index'],
                 'keyword' => $currencyData['keywords']
             ]);
