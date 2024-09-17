@@ -78,13 +78,13 @@ class Six6SController extends Controller
 
     //fetch the bo for bj88
     public function six6sBO(Request $request){
-        ini_set('max_execution_time', 1200); // Increase to 10 minutes
+        ini_set('max_execution_time', 3600); // Increase to 10 minutes
 
         // Call the currencyCollection method to get the array for the requested currency
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
-            $response = Http::timeout(1200)->post($this->url, [
+            $response = Http::timeout(3600)->post($this->url, [
                 'email' => 'exousianavi',
                 'password' => 'DataAnalyst2024',
                 'link' => 'https://six6scps.com/page/manager/login.jsp',
@@ -136,7 +136,7 @@ class Six6SController extends Controller
 
                             // Fetch data from the second platform using the affiliate username
                             $accountData = $this->feAccountBaji($value['Affiliate Username']);
-                            $fe_response = Http::timeout(1200)->post($this->url_fe, [
+                            $fe_response = Http::timeout(3600)->post($this->url_fe, [
                                 'username' => $value['Affiliate Username'],
                                 'password' => $accountData,
                                 'link' => 'https://6saffiliates.com/page/affiliate/login.jsp',

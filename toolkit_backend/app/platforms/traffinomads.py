@@ -172,7 +172,7 @@ class TrafficNomadsAutomation:
                 try:
                     # Try to insert the CID and select it
                     await page.get_by_role("searchbox", name="All").nth(2).fill(cid)
-                    await page.locator('.select2-results__option.select2-results__option--highlighted').click()
+                    await page.locator('.select2-results__option.select2-results__option--highlighted').click(timeout=3000)
                     logging.info(f"Keyword '{cid}' inserted and selected successfully.")
 
                     # Apply the filter
@@ -333,6 +333,7 @@ class TrafficNomadsAutomation:
                 return True
             except PlaywrightTimeoutError:
                 logging.error("Audio challenge failed due to timeout.")
+                await page.reload()  # This reloads the current page in the browser
                 return False
 
     # async def solve_audio_challenge(self, page):

@@ -135,7 +135,7 @@
                         
                         <div class="flex justify-between items-center gap-2">
                             
-                            <button type="submit"
+                            <button type="button"
                                 class="w-full mt-2 py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-700 focus:outline-none focus:bg-red-700 disabled:opacity-50 disabled:pointer-events-none"
                                 data-hs-overlay="#hs-modal-currency">
                                 Cancel</button>

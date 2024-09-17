@@ -34,7 +34,7 @@ class BackendController extends Controller
     //send request to python as BDT Currency
     public function BdtBOFetcher(Request $request)
     {
-        ini_set('max_execution_time', 1200); // Increase to 10 minutes
+        ini_set('max_execution_time', 3600); // Increase to 10 minutes
         // $client = new \GuzzleHttp\Client(['timeout' => 1200]); // Set timeout to 20 minutes
        
         // Call the currencyCollection method to get the array for the requested currency
@@ -42,7 +42,7 @@ class BackendController extends Controller
 
         try {
             // Fetch data from the first platform
-            $response = Http::timeout(1200)->post($this->url, [
+            $response = Http::timeout(3600)->post($this->url, [
                 'email' => 'exousianavi',
                 'password' => 'DataAnalys2024',
                 'link' => 'https://www.1xoffer.com/page/manager/login.jsp',
@@ -94,7 +94,7 @@ class BackendController extends Controller
 
                             // Fetch data from the second platform using the affiliate username
                             $accountData = $this->feAccountBaji($value['Affiliate Username']);
-                            $fe_response = Http::timeout(1200)->post($this->url_fe, [
+                            $fe_response = Http::timeout(3600)->post($this->url_fe, [
                                 'username' => $value['Affiliate Username'],
                                 'password' => $accountData,
                                 'link' => 'https://bajipartners.com/page/affiliate/login.jsp',
@@ -118,7 +118,7 @@ class BackendController extends Controller
                                 //'richads','richadspush','richadspkr','richadspkpush', 
                                 $pendingKeywords = [
                                     'adsterra','flatadbdt','propadsbdt','hilltopads','trafforcebdt',
-                                    'admavenbdt','onclicbdtpush','tforcepushbdt', 'daopkpush','daoadpkr',''];
+                                    'admavenbdt','onclicbdtpush','tforcepushbdt'];
                                 $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick','daonppop',''];
                                 if(!in_array($value['Affiliate Username'], $pendingKeywords)){
                                     $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);

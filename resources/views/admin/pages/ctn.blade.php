@@ -198,7 +198,7 @@
                     
                     // Store the Swal instance so you can close it later
                     const swalInstance = Swal.fire({
-                        title: "Automation is in progress!",
+                        title: "Automation in progress!",
                         html: htmls,
                         timerProgressBar: true,
                         allowOutsideClick: false,  // Prevent closing when clicking outside
@@ -236,10 +236,18 @@
                 const asyncRequest = (url, method, data, message) => {
                     return new Promise(function(resolve, reject) {
                         // Show loader
-                        const swalInstance = loader(`<div class="bg-slate-100 p-1 flex flex-col gap-2">
+                        const swalInstance = loader(`
+                            <div class="bg-slate-50 p-1 flex flex-col justify-center items-center gap-2 h-[300px]">
+                                    <div class="cube-folding mb-4">
+                                        <span class="leaf1"><p class="p p1 -rotate-45">B</p></span>
+                                        <span class="leaf2"><p class="p p2" style="transform: rotate(220deg) !important; color:rgb(50, 182, 50);">A</p></span>
+                                        <span class="leaf3"><p class="p p3" style="transform: rotate(220deg) !important; color:rgb(50, 182, 50);">I</p></span>
+                                        <span class="leaf4"><p class="p p4" style="transform: rotate(130deg) !important; ">J</p></span>
+                                    </div> 
                                     <span class="text-green-500">${message}...</span>
                                     <span class="text-slate-500"><b></b></span>
-                                </div>`);
+                                </div>
+                        `);
                         $.ajax({
                             url: url,
                             method: method,

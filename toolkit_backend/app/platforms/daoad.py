@@ -72,57 +72,57 @@ class DaoadAutomation:
             while True:
                 try:
                     os.makedirs(self.session_dir, exist_ok=True)
-                    self.delete_yesterdays_session()
+                    # self.delete_yesterdays_session()
 
-                    if Path(self.session_file_path).exists():
-                        state = json.loads(Path(self.session_file_path).read_text())
-                        browser = await p.chromium.launch(
-                            headless=False,
-                            args=[
-                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
-                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
-                            ]
-                            )
-                        context = await browser.new_context(storage_state=state,
-                                                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                                                            viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
-                                                            locale="en-US",                            # Set locale to match your regular browsing locale
-                                                            timezone_id="America/New_York" 
-                                                            )
-                        page = await context.new_page()
-                        await page.goto(self.dashboard)
-                        logging.info("Loaded existing session.")
-                    else:
-                        browser = await p.chromium.launch(
-                            headless=False,
-                            args=[
-                                "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
-                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
-                            ]
-                            )
-                        context = await browser.new_context(
-                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                            viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
-                            locale="en-US",                            # Set locale to match your regular browsing locale
-                            timezone_id="America/New_York" 
-                        )
-                        page = await context.new_page()
-                        await page.goto(self.link)
+                    # if Path(self.session_file_path).exists():
+                    #     state = json.loads(Path(self.session_file_path).read_text())
+                    #     browser = await p.chromium.launch(
+                    #         headless=False,
+                    #         args=[
+                    #             "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                    #             "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                    #         ]
+                    #         )
+                    #     context = await browser.new_context(storage_state=state,
+                    #                                         user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                    #                                         viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                    #                                         locale="en-US",                            # Set locale to match your regular browsing locale
+                    #                                         timezone_id="America/New_York" 
+                    #                                         )
+                    #     page = await context.new_page()
+                    #     await page.goto(self.dashboard)
+                    #     logging.info("Loaded existing session.")
+                    # else:
+                    browser = await p.chromium.launch(
+                        headless=False,
+                        args=[
+                            "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                            "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                        ]
+                    )
+                    context = await browser.new_context(
+                        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                        viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                        locale="en-US",                            # Set locale to match your regular browsing locale
+                        timezone_id="America/New_York" 
+                    )
+                    page = await context.new_page()
+                    await page.goto(self.link)
                         
-                        if not await self.fill_login_form(page):
-                            return {"status": 400, "text": "Failed to fill the login form."}
+                    if not await self.fill_login_form(page):
+                        return {"status": 400, "text": "Failed to fill the login form."}
                         
-                        # await self.solve_recaptcha(page)
+                    # await self.solve_recaptcha(page)
                     
-                        if not await self.submit_form(page):
-                            return {"status": 400, "text": "Failed to submit the login form."}
+                    if not await self.submit_form(page):
+                        return {"status": 400, "text": "Failed to submit the login form."}
                     
                     await page.wait_for_load_state('load')
                     
                     
-                    state = await context.storage_state()
-                    Path(self.session_file_path).write_text(json.dumps(state))
-                    logging.info("Session saved.")
+                    # state = await context.storage_state()
+                    # Path(self.session_file_path).write_text(json.dumps(state))
+                    # logging.info("Session saved.")
             
                     if not await self.report(page):
                         logging.error("Failed to click report button.")
@@ -314,6 +314,15 @@ class DaoadAutomation:
             # Now you can interact with elements inside the iframe
             recaptcha_checkbox = await iframe.wait_for_selector('#recaptcha-anchor')
             await recaptcha_checkbox.click()
+            
+            # Check if the reCAPTCHA checkbox is already checked
+            recaptcha_checked = await recaptcha_checkbox.get_attribute('aria-checked')
+
+            # If the checkbox is already checked, no need to click it
+            if recaptcha_checked == "true":
+                print("ReCAPTCHA is already solved, skipping.")
+                return True
+        
             if await self.check_dos_captcha(page):
                 raise Exception("Detected 'Try again later' message.")
             await self.solve_audio_challenge(page)

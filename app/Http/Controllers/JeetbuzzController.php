@@ -136,7 +136,7 @@ class JeetbuzzController extends Controller
 
                             // Fetch data from the second platform using the affiliate username
                             $accountData = $this->feAccountBaji($value['Affiliate Username']);
-                            $fe_response = Http::timeout(1200)->post($this->url_fe, [
+                            $fe_response = Http::timeout(3600)->post($this->url_fe, [
                                 'username' => $value['Affiliate Username'],
                                 'password' => $accountData,
                                 'link' => 'https://jeetbuzzpartners.com/page/affiliate/login.jsp',

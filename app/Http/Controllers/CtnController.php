@@ -80,13 +80,13 @@ class CtnController extends Controller
     }
     //fetch the bo for bj88
     public function ctnBO(Request $request){
-        ini_set('max_execution_time', 1200); // Increase to 10 minutes
+        ini_set('max_execution_time', 3600); // Increase to 10 minutes
 
         // Call the currencyCollection method to get the array for the requested currency
         $currencyData = $this->currencyCollection($request->currency);
         try {
             // Fetch data from the first platform
-            $response = Http::timeout(1200)->post($this->url, [
+            $response = Http::timeout(3600)->post($this->url, [
                 'email' => 'exousianavi',
                 'password' => 'DataAnalyst2024',
                 'link' => 'https://citicps.com/page/manager/login.jsp',
@@ -141,12 +141,12 @@ class CtnController extends Controller
                                 's6clickadubdt','s6clickadubdt','jbpktfshop','jbpkflatad','jbtrafficshop',
                                 'jbhilltopads','jbclickadubdt','jbflatadbdt','jbadsterrabdt',
                                 'ctmypropads','cthkpropadpop','cthkadsterra',
-                                'ctmydaoad','ctsgdaopop'//skipped for now because of 2fa
+                                // 'ctmydaoad','ctsgdaopop'//skipped for now because of 2fa
                             ];
                             // $allowedUsernames = ['adcashpkr', 'trastarpkr', 'adxadbdt','trafficnompkr', 'exoclick'];
                             if(!in_array($value['Affiliate Username'], $pendingKeywords)){
                                 $clicksAndImpressionData = $this->creativeId($value['Affiliate Username']);
-                                $clicks_response = Http::timeout(1200)->post($this->url_cai, [
+                                $clicks_response = Http::timeout(3600)->post($this->url_cai, [
                                     'keywords' => $value['Affiliate Username'],
                                     'email' => $clicksAndImpressionData['email'],
                                     'password' => $clicksAndImpressionData['password'],

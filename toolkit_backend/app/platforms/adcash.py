@@ -142,7 +142,7 @@ class AdcashScraper:
         try:
             await page.fill('input[id="s2id_autogen3"]', cid)
             await page.wait_for_selector("div.select2-result-label[role='option']", timeout=3000)
-            await page.click(f"div.select2-result-label[role='option']:has-text('{cid}')")
+            await page.click(f"div.select2-result-label[role='option']:has-text('{cid}')", timeout=3000)
         except Exception as e:
             logging.error(f"Error selecting option for CID '{cid}': {e}")
             raise
@@ -253,7 +253,7 @@ class AdcashScraper:
             # Clear the selection for the next CID
             try:
                 # Attempt to clear the campaign selection for the next CID
-                await page.click("#s2id_detailedstatisticssearch-campaigns > ul > li.select2-search-choice > a")
+                await page.click("#s2id_detailedstatisticssearch-campaigns > ul > li.select2-search-choice > a", timeout=3000)
             except Exception as clear_error:
                 logging.error(f"Failed to clear the selection for creative ID '{cid}': {clear_error}")
                 # Return default values if clearing fails as well
