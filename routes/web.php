@@ -92,6 +92,9 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
         // add cost, impressions and clicks
         Route::post('cli/insert',[BajiController::class, 'insert'])->name('cli.insert');
+
+        //manage the bo accounts
+        Route::post('manage/bo',[AsyncRequestController::class, 'manage'])->name('manage.account');
     });
 
     // User Routes
