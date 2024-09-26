@@ -6,13 +6,14 @@ class TestRequest(BaseModel):
     link: str
     currency: str
     keyword: List[str]  # Expecting a list of strings
-    
+    targetdate: str
     
 class FeRequest(BaseModel):
     username: str
     password: str
     link: str
     currency: str
+    targetdate: str
     
     
 class ClicksAndImpressionRequest(BaseModel):
@@ -23,6 +24,7 @@ class ClicksAndImpressionRequest(BaseModel):
     creative_id: List[str]
     dashboard: str
     platform: str
+    targetdate: str
     
 class SpreedSheetRequest(BaseModel):
     request_data: List[Dict[str, Any]]

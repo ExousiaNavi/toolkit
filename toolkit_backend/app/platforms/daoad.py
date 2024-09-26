@@ -1,26 +1,3 @@
-# import asyncio
-# import os
-# import urllib.request
-# import sys
-# import logging
-# import pydub
-# from datetime import datetime, timedelta
-# import speech_recognition as sr
-# from pydub.playback import play
-
-# from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
-
-# # Set the path to your local FFmpeg and FFprobe
-# ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
-# ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
-
-# # Set environment variables
-# os.environ["PATH"] += os.pathsep + ffmpeg_path
-# os.environ["PATH"] += os.pathsep + ffprobe_path
-
-# path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
-# path_to_wav = os.path.normpath(os.path.join(os.getcwd(), "sample.wav"))
-    
 import asyncio
 import os
 import urllib.request
@@ -29,13 +6,17 @@ from pathlib import Path
 import logging
 import pydub
 import json
+import random
+import aiohttp
+from bs4 import BeautifulSoup as bs
+from fake_useragent import UserAgent
 from datetime import datetime, timedelta
 import speech_recognition as sr
 from pydub.playback import play
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
 class DaoadAutomation:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
         self.password = password
@@ -43,6 +24,7 @@ class DaoadAutomation:
         self.creative_id = creative_id
         self.dashboard = dashboard
         self.platform = platform
+        self.targetdate = targetdate
         self.ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
         self.ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
         self.path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
@@ -67,88 +49,142 @@ class DaoadAutomation:
             os.remove(yesterday_session_file)
             logging.info(f"Deleted yesterday's session file: {yesterday_session_file}")
 
-    async def run(self):
-        async with async_playwright() as p:
-            while True:
-                try:
-                    os.makedirs(self.session_dir, exist_ok=True)
-                    # self.delete_yesterdays_session()
+    
+    async def get_free_proxies(self):
+        url = "https://free-proxy-list.net/"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                html = await response.text()
+                soup = bs(html, 'html.parser')
+                proxies = []
+                for row in soup.find("table", attrs={"class":"table table-striped table-bordered"}).find_all("tr")[1:]:
+                    tds = row.find_all("td")
+                    try:
+                        ip = tds[0].text.strip()
+                        port = tds[1].text.strip()
+                        if tds[6].text.strip() == "yes":  # HTTP proxies only
+                            proxies.append(f"{ip}:{port}")
+                    except IndexError:
+                        continue
+                return proxies
 
-                    # if Path(self.session_file_path).exists():
-                    #     state = json.loads(Path(self.session_file_path).read_text())
-                    #     browser = await p.chromium.launch(
-                    #         headless=False,
-                    #         args=[
-                    #             "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
-                    #             "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
-                    #         ]
-                    #         )
-                    #     context = await browser.new_context(storage_state=state,
-                    #                                         user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                    #                                         viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
-                    #                                         locale="en-US",                            # Set locale to match your regular browsing locale
-                    #                                         timezone_id="America/New_York" 
-                    #                                         )
-                    #     page = await context.new_page()
-                    #     await page.goto(self.dashboard)
-                    #     logging.info("Loaded existing session.")
-                    # else:
-                    browser = await p.chromium.launch(
-                        headless=False,
-                        args=[
-                            "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
-                            "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
-                        ]
-                    )
-                    context = await browser.new_context(
-                        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                        viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
-                        locale="en-US",                            # Set locale to match your regular browsing locale
-                        timezone_id="America/New_York" 
-                    )
-                    page = await context.new_page()
-                    await page.goto(self.link)
-                        
-                    if not await self.fill_login_form(page):
-                        return {"status": 400, "text": "Failed to fill the login form."}
-                        
-                    # await self.solve_recaptcha(page)
-                    
-                    if not await self.submit_form(page):
-                        return {"status": 400, "text": "Failed to submit the login form."}
-                    
-                    await page.wait_for_load_state('load')
-                    
-                    
-                    # state = await context.storage_state()
-                    # Path(self.session_file_path).write_text(json.dumps(state))
-                    # logging.info("Session saved.")
-            
-                    if not await self.report(page):
-                        logging.error("Failed to click report button.")
-                        continue  # Retry if report fails
-                    await page.wait_for_load_state('load')
-                
-                    daoad = await self.scrapping(page)
-                    
-                    await page.wait_for_load_state('load')
-                    await asyncio.sleep(5)
-
-                    # state = await context.storage_state()
-                    # Path(self.session_file_path).write_text(json.dumps(state))
-                    # logging.info("Session saved.")
-                    
-                    logging.info(f"Collected: {daoad}")
-                    return daoad
-                    break  # Exit the loop if successful
-
-                except Exception as e:
-                    print(f"[ERROR] An unexpected error occurred: {e}")
-                finally:
-                    await context.close()
-                    await browser.close()
-
+    async def test_proxy(self,proxy):
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get("http://ifconfig.me/", proxy=f"http://{proxy}", timeout=5) as response:
+                    return response.status == 200
+            except Exception:
+                return False
         
+    async def run(self):
+        proxies = await self.get_free_proxies()
+                    
+        async with async_playwright() as p:
+                    while True:
+                        try:
+                            # Select a random proxy from the list
+                            # proxy = random.choice(proxies)
+                            # is_working = await self.test_proxy(proxy)
+                            # if is_working:
+                            #     print(f"Using proxy: {proxy}")
+                                
+                            os.makedirs(self.session_dir, exist_ok=True)
+                            # self.delete_yesterdays_session()
+                            # Using fake-useragent to generate a random user agent for each session
+                            ua = UserAgent()
+                            user_agent = ua.random
+                            # if Path(self.session_file_path).exists():
+                            #     state = json.loads(Path(self.session_file_path).read_text())
+                            #     browser = await p.chromium.launch(
+                            #         headless=False,
+                            #         args=[
+                            #             "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                            #             "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                            #         ]
+                            #         )
+                            #     context = await browser.new_context(storage_state=state,
+                            #                                         user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                            #                                         viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                            #                                         locale="en-US",                            # Set locale to match your regular browsing locale
+                            #                                         timezone_id="America/New_York" 
+                            #                                         )
+                            #     page = await context.new_page()
+                            #     await page.goto(self.dashboard)
+                            #     logging.info("Loaded existing session.")
+                            # else:
+                            
+                                    
+                            browser = await p.chromium.launch(
+                                # proxy={"server": f"http://{proxy}"},
+                                headless=False,
+                                args=[
+                                        "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
+                                        "--disable-infobars",  # Disables "Chrome is being controlled by automated software" message
+                                        "--remote-debugging-port=9223",  # Changing default debugging port to avoid detection
+                                    ]
+                            )
+                            context = await browser.new_context(
+                                user_agent=user_agent,
+                                viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
+                                locale="en-US",                            # Set locale to match your regular browsing locale
+                                timezone_id="America/New_York" 
+                            )
+                            
+                            # Add stealth scripts to avoid detection
+                            await context.add_init_script("""
+                                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                                Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                                Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+                                WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                                    if (parameter === 37445) return 'Intel Inc.';
+                                    if (parameter === 37446) return 'Intel Iris OpenGL Engine';
+                                    return WebGLRenderingContext.prototype.getParameter(parameter);
+                                };
+                            """)
+                                
+                            page = await context.new_page()
+                            await page.goto(self.link)
+                                
+                            if not await self.fill_login_form(page):
+                                return {"status": 400, "text": "Failed to fill the login form."}
+                                
+                            # await self.solve_recaptcha(page)
+                            
+                            if not await self.submit_form(page):
+                                return {"status": 400, "text": "Failed to submit the login form."}
+                            
+                            await page.wait_for_load_state('load')
+                            
+                            
+                            # state = await context.storage_state()
+                            # Path(self.session_file_path).write_text(json.dumps(state))
+                            # logging.info("Session saved.")
+                    
+                            if not await self.report(page):
+                                logging.error("Failed to click report button.")
+                                continue  # Retry if report fails
+                            await page.wait_for_load_state('load')
+                        
+                            daoad = await self.scrapping(page)
+                            
+                            await page.wait_for_load_state('load')
+                            await asyncio.sleep(5)
+
+                            # state = await context.storage_state()
+                            # Path(self.session_file_path).write_text(json.dumps(state))
+                            # logging.info("Session saved.")
+                            
+                            logging.info(f"Collected: {daoad}")
+                            return daoad
+                            break  # Exit the loop if successful
+
+                        except Exception as e:
+                            print(f"[ERROR] An unexpected error occurred: {e}")
+                        finally:
+                            await context.close()
+                            await browser.close()
+
+                
     async def fill_login_form(self, page):
         try:
             await page.get_by_placeholder("Email").fill(self.email)
@@ -160,14 +196,24 @@ class DaoadAutomation:
         except Exception as e:
             logging.error(f"Error filling login form: {e}")
             return False
-
+    
     async def submit_form(self, page):
         try:
             await page.get_by_role("button", name="Log In").click()
             await asyncio.sleep(5)
             await self.solve_recaptcha(page)
             await page.get_by_role("button", name="Log In").click()
-                    
+             # Wait for the 2FA input field to be visible using XPath
+            # two_fa_input = page.wait_for_selector('xpath=//*[@id="loginform-required2fa"]', state='visible')
+
+            # if two_fa_input:
+            #     print("2FA input is now visible.")
+                
+            #     # Now that the 2FA input is visible
+            #     # await asyncio.sleep(120)
+            #     # await page.get_by_role("button", name="Log In").click()
+            # else:
+            #     print("2FA input did not appear.")
             return True
         except PlaywrightTimeoutError:
             logging.error("Timeout during form submission.")
@@ -206,7 +252,17 @@ class DaoadAutomation:
             await asyncio.sleep(5)
             
             await page.get_by_placeholder("Date range").click()
-            await page.get_by_text("Yesterday").click()
+            # await page.get_by_text("Yesterday").click()
+            # await page.fill("//*[@id='w1']")
+            # Step 1: Click the input field to focus on it
+            await page.locator("//*[@id='w1']").click()
+
+            # Step 2: Clear the input field by filling it with an empty string
+            await page.fill("//*[@id='w1']", "")
+
+            # Step 3: Fill the input field with the new value
+            await page.fill("//*[@id='w1']", self.targetdate)  # Replace "Your New Value" with the actual value
+
            
             
             
@@ -420,18 +476,3 @@ class DaoadAutomation:
             except PlaywrightTimeoutError:
                 logging.error("Audio challenge failed due to timeout.")
                 raise Exception("Audio challenge failed due to timeout.")
-                
-
-# # Example usage in another file
-# if __name__ == "__main__":
-#     automation = DaoadAutomation(
-#         keywords="daoadpkr",
-#         email="abiralmilan1014@gmail.com",
-#         password="B@j!qwe@4444",
-#         link="https://dao.ad/login",
-#         dashboard="https://dao.ad/manage/dashboard",
-#         platform="daoad",
-#         creative_id=['286293', '286733', '284858', '285126', '287030', '288497', '315278']
-#     )
-#     asyncio.run(automation.run())
-

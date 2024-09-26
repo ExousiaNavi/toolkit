@@ -6,13 +6,14 @@ from datetime import datetime, timedelta
 from functools import partial
 
 class GoogleSheetsManager:
-    def __init__(self, service_account_file: str, scopes: list[str], spreadsheet_id: str, platform: str, bo: list[str], keyword: str):
+    def __init__(self, service_account_file: str, scopes: list[str], spreadsheet_id: str, platform: str, bo: list[str], keyword: str, target_date: str):
         self.service_account_file = service_account_file
         self.scopes = scopes
         self.spreadsheet_id = spreadsheet_id
         self.platform = platform
         self.bo = bo
         self.keyword = keyword
+        self.target_date = target_date
         # self.clicks_imprs = clicks_imprs
         # Initialize credentials and create a service object
         self.creds = service_account.Credentials.from_service_account_file(
@@ -28,10 +29,36 @@ class GoogleSheetsManager:
             col = col // 26 - 1
         return letter
 
+    def formatTime(self, values):
+        if isinstance(values, datetime):
+            # If it's already a datetime object, return it
+            return values
+        elif isinstance(values, str):
+            date_string = values
+
+            try:
+                # Try parsing the date string in 'YYYY/MM/DD' format
+                date_obj = datetime.strptime(date_string, '%Y/%m/%d')
+                return date_obj
+            except ValueError:
+                try:
+                    # If the first format fails, try 'YYYY-MM-DD' format
+                    date_obj = datetime.strptime(date_string, '%Y-%m-%d')
+                    return date_obj
+                except ValueError:
+                    # If both formats fail, return None
+                    return None
+        else:
+            return None
+    
     def yesterday_date(self, values):
         """Find the row index of yesterday's date."""
         # yesterday_date = datetime.now().date()
-        yesterday_date = (datetime.now().date() - timedelta(days=1))
+        # If no target date is provided, default to yesterday
+        yesterday_date = self.formatTime(self.target_date)
+        if yesterday_date is None:
+            yesterday_date = (datetime.now().date() - timedelta(days=1))
+            
         formatted_date = yesterday_date.strftime("%B %#d")
         yesterday_date_no_zero = yesterday_date.strftime("%#m/%#d/%Y")
         print(f"data: {yesterday_date_no_zero}, {formatted_date}")
@@ -130,6 +157,7 @@ class GoogleSheetsManager:
             )
 
             data = {
+                "target_date": self.target_date,
                 "status": 200,
                 "text": self.platform+" Automation Completed",
                 "title": "Spreadsheet Automation Completed!",

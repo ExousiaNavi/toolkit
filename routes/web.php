@@ -11,9 +11,11 @@ use App\Http\Controllers\Ic88Controller;
 use App\Http\Controllers\JeetbuzzController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Six6SController;
+use App\Http\Controllers\SpreadsheetIdController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WinrsController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -95,6 +97,11 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
         //manage the bo accounts
         Route::post('manage/bo',[AsyncRequestController::class, 'manage'])->name('manage.account');
+        // manage spreedsheet
+        Route::get('manage/spreedsheet/{brand}',[SpreadsheetIdController::class, 'spreedsheet_manage'])->name('manage.spreedsheet');
+        Route::post('manage/spreedsheet/add',[SpreadsheetIdController::class, 'spreedsheet_add'])->name('manage.spreedsheet.add');
+        Route::post('manage/spreedsheet/edit',[SpreadsheetIdController::class, 'spreedsheet_edit'])->name('manage.spreedsheet.edit');
+        Route::get('manage/spreedsheet/archived/{id}',[SpreadsheetIdController::class, 'spreedsheet_archived'])->name('manage.spreedsheet.archived');
     });
 
     // User Routes

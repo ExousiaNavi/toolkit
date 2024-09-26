@@ -6,19 +6,23 @@ from pathlib import Path
 import logging
 import pydub
 import json
+import random
+import aiohttp
+from fake_useragent import UserAgent
 from datetime import datetime, timedelta
 import speech_recognition as sr
 from pydub.playback import play
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
 class TrafficNomadsAutomation:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
         self.password = password
         self.link = link
         self.creative_id = creative_id
         self.dashboard = dashboard
+        self.targetdate = targetdate
         self.platform = platform
         self.ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
         self.ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
@@ -51,33 +55,70 @@ class TrafficNomadsAutomation:
                     os.makedirs(self.session_dir, exist_ok=True)
                     self.delete_yesterdays_session()
 
+                    # Using fake-useragent to generate a random user agent for each session
+                    ua = UserAgent()
+                    user_agent = ua.random
+                
                     if Path(self.session_file_path).exists():
                         state = json.loads(Path(self.session_file_path).read_text())
                         browser = await p.chromium.launch(
                             headless=False,
                             args=[
                                 "--disable-blink-features=AutomationControlled",  # Disables detection of automation tools
-                                "--disable-infobars"  # Disables "Chrome is being controlled by automated software" message
+                                "--disable-infobars",  # Disables "Chrome is being controlled by automated software" message
+                                "--remote-debugging-port=9223",  # Changing default debugging port to avoid detection
                             ]
                             )
                         context = await browser.new_context(
                             storage_state=state,
-                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                            user_agent=user_agent,
                             viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
                             locale="en-US",                            # Set locale to match your regular browsing locale
                             timezone_id="America/New_York" 
                             )
+                        
+                        # Add stealth scripts to avoid detection
+                        await context.add_init_script("""
+                            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                            Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                            Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+                            WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                                if (parameter === 37445) return 'Intel Inc.';
+                                if (parameter === 37446) return 'Intel Iris OpenGL Engine';
+                                return WebGLRenderingContext.prototype.getParameter(parameter);
+                            };
+                        """)
+                    
                         page = await context.new_page()
                         await page.goto(self.dashboard)
                         logging.info("Loaded existing session.")
                     else:
-                        browser = await p.chromium.launch(headless=False)
+                        browser = await p.chromium.launch(headless=False,
+                                                          args=[
+                                                                "--disable-blink-features=AutomationControlled",
+                                                                "--disable-infobars",
+                                                                "--remote-debugging-port=9223",
+                                                            ]
+                                                          )
                         context = await browser.new_context(
-                            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+                            user_agent=user_agent,
                             viewport={"width": 1280, "height": 720},   # Set the same viewport size as your regular browser
                             locale="en-US",                            # Set locale to match your regular browsing locale
                             timezone_id="America/New_York" 
                         )
+                        
+                        # Add stealth scripts to avoid detection
+                        await context.add_init_script("""
+                            Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                            Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                            Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+                            WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                                if (parameter === 37445) return 'Intel Inc.';
+                                if (parameter === 37446) return 'Intel Iris OpenGL Engine';
+                                return WebGLRenderingContext.prototype.getParameter(parameter);
+                            };
+                        """)
+                    
                         page = await context.new_page()
                         await page.goto(self.link)
                         
@@ -95,15 +136,17 @@ class TrafficNomadsAutomation:
                     if not await self.report(page):
                         return {"status": 400, "text": "Failed to click report button."}
                     await page.wait_for_load_state('load')
-                
+
+                    state = await context.storage_state()
+                    Path(self.session_file_path).write_text(json.dumps(state))
+                    logging.info("Session saved.")
+                    
                     nomads = await self.scrapping(page)
                     
                     await page.wait_for_load_state('load')
                     await asyncio.sleep(5)
 
-                    state = await context.storage_state()
-                    Path(self.session_file_path).write_text(json.dumps(state))
-                    logging.info("Session saved.")
+                    
                     return nomads
                     break  # Exit the loop if successful
 
@@ -155,77 +198,78 @@ class TrafficNomadsAutomation:
             logging.error("Navigation failed")
             return False
 
+    async def send_request(self, page, cid, dateT, raw_cookies):
+       
+        try:
+            logging.info(f"Sending POST request for cid: {cid}...")
+
+            
+            cookies = {cookie['name']: cookie['value'] for cookie in raw_cookies}
+
+            async with aiohttp.ClientSession(cookies=cookies) as session:
+                url = 'https://partners.trafficnomads.com/reports/dateReport'
+                payload = {
+                    'dateType': 'day',
+                    'daterange': dateT,
+                    # 'daterange': '2024-09-04 - 2024-09-04',
+                    'campaigns[]': cid
+                }
+
+                async with session.post(url, data=payload) as response:
+                    logging.info(f"Received response with status: {response.status}")
+                    # Ensure 'data' is only initialized inside the correct scope
+                    data = None
+                    formattedData = None
+                    if response.status == 200:
+                        try:
+                            data = await response.text()
+                            parsed_data = json.loads(data)
+                        except json.JSONDecodeError as json_err:
+                            logging.error(f"Failed to parse JSON for cid: {cid}, error: {json_err}")
+                            return  # Exit the function if JSON parsing fails
+
+                        if 'data' in parsed_data and isinstance(parsed_data['data'], list):
+                            for campaign in parsed_data['data']:
+                                creative_id = cid
+                                impressions = campaign.get('impressions', '0')
+                                clicks = campaign.get('clicks', '0')
+                                spending = campaign.get('cost', '0.00')
+                                logging.info(f"Campaign ID: {creative_id}, Impressions: {impressions}, Clicks: {clicks}, Spending: {spending}")
+                                
+                                formattedData = {
+                                        'creative_id': creative_id,
+                                        'Impressions': impressions,
+                                        'Clicks': clicks,
+                                        'Spending': spending,
+                                    }
+                            
+                            return formattedData
+                        else:
+                            logging.error(f"'data' field is missing or not in the expected format for cid: {cid}")
+                    else:
+                        logging.error(f"Request failed with status {response.status} for cid: {cid}")
+                        return  # Exit the function if the request fails
+        except Exception as e:
+            logging.error(f"An error occurred for cid: {cid}: {str(e)}")
+                    
     async def scrapping(self, page):
         try:
-            yesterday = datetime.now() - timedelta(1)
-            formatted_date = yesterday.strftime("%Y-%m-%d")
-            date_range = f"{formatted_date} - {formatted_date}"
-
-            await page.fill('#filter_date', date_range)
-            await asyncio.sleep(2)
-            yesterday_btn_option = '/html/body/div[14]/div[1]/ul/li[2]'
-            await page.eval_on_selector(f'xpath={yesterday_btn_option}', "element => element.click()")
-            logging.info("Yesterday button option clicked using JavaScript.")
-
+            os.makedirs(self.session_dir, exist_ok=True)
+            session_state = json.loads(Path(self.session_file_path).read_text())
+            raw_cookies = session_state.get('cookies', [])
             results = []
             for cid in self.creative_id:
+                
                 try:
-                    # Try to insert the CID and select it
-                    await page.get_by_role("searchbox", name="All").nth(2).fill(cid)
-                    await page.locator('.select2-results__option.select2-results__option--highlighted').click(timeout=3000)
-                    logging.info(f"Keyword '{cid}' inserted and selected successfully.")
-
-                    # Apply the filter
-                    await page.get_by_role("button", name="Apply").click()
-                    await asyncio.sleep(10)
-                    await page.wait_for_selector("#DataTables_Table_0 tfoot tr", state="visible", timeout=60000)
-                    logging.info("Table footer loaded.")
-                    await page.mouse.wheel(0, 1000)
-                    tr_locator = page.locator("#DataTables_Table_0 tfoot tr")
-
-                    # Extract data from the footer
-                    impressions = await tr_locator.locator("th").nth(1).text_content()
-                    clicks = await tr_locator.locator("th").nth(2).text_content()
-                    spending = await tr_locator.locator("th").nth(3).text_content()
-
-                    data = {
-                        'creative_id': cid,
-                        'Impressions': impressions.strip(),
-                        'Clicks': clicks.strip(),
-                        'Spending': spending.strip(),
-                    }
-
+                    responseData = await self.send_request(page, cid, self.targetdate, raw_cookies)
+                    results.append(responseData)
                 except Exception as e:
                     # If any error occurs (including Locator.click timeout), assign default values
                     logging.error(f"An error occurred with creative_id '{cid}': {str(e)}. Defaulting values to 0.")
-                    data = {
-                        'creative_id': cid,
-                        'Impressions': '0',
-                        'Clicks': '0',
-                        'Spending': '0'
-                    }
 
-                # Append the result and move on to the next CID
-                results.append(data)
-                logging.info(f"Data for creative_id '{cid}' collected: {data}")
+                logging.info(f"Data for creative_id '{cid}'")
 
-                # Scroll up and close the search for the next loop
-                await page.mouse.wheel(0, -1000)
-                try:
-                    await page.get_by_text("×").click()
-                except Exception as e:
-                    logging.error(f"error default value inserted.")
-                    data = {
-                        'creative_id': cid,
-                        'Impressions': '0',
-                        'Clicks': '0',
-                        'Spending': '0'
-                    }
-
-                # Append the result and move on to the next CID
-                results.append(data)
-
-            logging.info(f"Collected: {results}")
+            logging.info(f"Data for creative_id '{results}'")
             return results
 
         except Exception as e:
@@ -335,51 +379,3 @@ class TrafficNomadsAutomation:
                 logging.error("Audio challenge failed due to timeout.")
                 await page.reload()  # This reloads the current page in the browser
                 return False
-
-    # async def solve_audio_challenge(self, page):
-    #     audio_frame = page.frame_locator('iframe[title="recaptcha challenge expires in two minutes"]')
-    #     audio_button = audio_frame.locator('button#recaptcha-audio-button')
-    #     if await audio_button.is_visible():
-    #         await audio_button.click()
-    #         print("[INFO] Audio button clicked. Waiting for the audio source...")
-    #         try:
-    #             audio_source = await audio_frame.locator('audio').get_attribute('src')
-    #             if not audio_source:
-    #                 raise Exception("No audio source found.")
-    #             print(f"[INFO] Audio source found: {audio_source}")
-
-    #             urllib.request.urlretrieve(audio_source, self.path_to_mp3)
-    #             print("[INFO] Audio CAPTCHA downloaded. Converting to WAV format...")
-    #             sound = pydub.AudioSegment.from_mp3(self.path_to_mp3)
-    #             sound.export(self.path_to_wav, format="wav")
-    #             audio = pydub.AudioSegment.from_wav(self.path_to_wav)
-    #             play(audio)
-
-    #             recognizer = sr.Recognizer()
-    #             with sr.AudioFile(self.path_to_wav) as source:
-    #                 audio = recognizer.record(source)
-    #             print("[INFO] Transcribing audio...")
-    #             transcription = recognizer.recognize_google(audio)
-    #             print(f"[INFO] Transcription: {transcription}")
-
-    #             transcription_input = audio_frame.locator('input[type="text"]')
-    #             await transcription_input.fill(transcription)
-    #             verify_button = audio_frame.locator('button#recaptcha-verify-button')
-    #             await verify_button.click()
-
-    #         except PlaywrightTimeoutError:
-    #             logging.error("Audio challenge failed due to timeout.")
-
-    # async def fetch_info(self):
-    #     await self.main()
-
-# Example usage in another file
-# if __name__ == "__main__":
-#     automation = TrafficNomadsAutomation(
-#         keywords="trafficnompkr",
-#         email="abiralmilan1014@gmail.com",
-#         password="B@j!qwe@4444",
-#         link="https://bajipartners.com/page/affiliate/login.jsp",
-#         creative_id=["20948", "20947", "22698"]
-#     )
-#     asyncio.run(automation.fetch_info())

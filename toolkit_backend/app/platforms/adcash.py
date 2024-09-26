@@ -6,13 +6,14 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime, timedelta
+from fake_useragent import UserAgent
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 class AdcashScraper:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targedate):
         self.keywords = keywords
         self.email = email
         self.password = password
@@ -20,6 +21,7 @@ class AdcashScraper:
         self.creative_id = creative_id
         self.dashboard = dashboard
         self.platform = platform
+        self.targetdate = targedate
         self.session_dir = "sessions"
         self.today = datetime.now().strftime('%Y-%m-%d')
         self.session_file_name = f"{self.keywords.replace(' ', '_')}_{self.today}.json"
@@ -30,6 +32,63 @@ class AdcashScraper:
         
         # Delete yesterday's session file if it exists
         self.delete_yesterdays_session()
+
+    # Function to locate, print, and click the matching `td` elements under the calendar
+    async def extract_td_elements(self, page, header_tbody_xpath, previous_days):
+        
+        print(f"Target dates to click: {previous_days}")
+
+        # Locate all matching `td` elements in the calendar
+        td_elements = await page.locator(header_tbody_xpath).all()
+
+        if not td_elements:
+            print("No `td` elements found in the calendar. Check the XPath or page state.")
+        else:
+            # Loop through each `td` element and check if it matches any of the target days
+            for td in td_elements:
+                td_text = await td.inner_text()  # Get the text content of the `td` element
+                td_text = td_text.strip()  # Clean up any surrounding whitespace
+                # Check if the text matches any of the previous three days
+                if td_text == previous_days:
+                    print(f"Clicking on day {td_text}")
+                    await td.dblclick()
+                    await asyncio.sleep(3)
+                    
+                    #click the button apply
+                    await page.click("//div[@class='drp-buttons']//button[contains(@class, 'applyBtn')]")
+                    await asyncio.sleep(3)
+
+    # Function to locate and check the month headers in both calendars
+    async def dateHeader(self, page):
+        # Define XPaths for selecting the left and right date headers
+        calendar_paths = {
+            "left": "//div[@class='drp-calendar left']//th[@class='month']",
+            "right": "//div[@class='drp-calendar right']//th[@class='month']"
+        }
+
+        # Get the current month and year in the format 'Sep 2024'
+        current_month_year = datetime.now().strftime("%b %Y")
+
+        # Loop through the left and right calendars
+        for position, xpath in calendar_paths.items():
+            # Locate the calendar header
+            headers = await page.locator(xpath).all()
+
+            if not headers:
+                print(f"No {position} calendar headers found. Check the XPath or page state.")
+            else:
+                for header in headers:
+                    header_text = await header.inner_text()
+                    print(f"{position.capitalize()} Calendar Month:", header_text)
+
+                    # Check if the header matches the current month and year
+                    if current_month_year == header_text.strip():
+                        print(f"{position.capitalize()} formatted date: {header_text}")
+                        # Define the `td` elements XPath dynamically based on the calendar position
+                        header_tbody_xpath = f"//div[@class='drp-calendar {position}']//td"
+                        # await extract_td_elements(page, header_tbody_xpath, tday)
+                        return header_tbody_xpath
+
 
     def get_yesterday_session_file(self):
         """Get the session file path for yesterday's date."""
@@ -71,17 +130,23 @@ class AdcashScraper:
                 if not await self.navigate_to_report(page):
                     return {"status": 400, "text": "Failed to navigate to the report page."}
 
+    
+    
+                #starting form here we need to performed the 3 date ranges if present
                 if not await self.set_yesterdays_date(page):
                     return {"status": 400, "text": "Failed to set yesterday's date."}
                 
                 # Call the function to extract the data
                 table_data = await self.extract_table_data(page)
                 logging.info(table_data)
-                
+                 #end in here before we send it back
+                 
+                 
                 # Save the session after a successful login
                 state = await context.storage_state()
                 Path(self.session_file_path).write_text(json.dumps(state))
                 logging.info("Session saved.")
+               
                 
                 return table_data
 
@@ -284,22 +349,37 @@ class AdcashScraper:
     async def set_yesterdays_date(self, page):
         try:
             await asyncio.sleep(2)
+            # # Click on the date picker input to open the dropdown
+            # await page.click("div.kv-drp-dropdown.form-control.daterange.daterange-inline")
+
+            # # Wait for the dropdown to be visible
+            # await page.wait_for_selector("div.daterangepicker.ltr.show-ranges.opensright")
+            
+            # # Select "Yesterday" from the list
+            # await page.click("li[data-range-key='Yesterday']")
+
+            # # Click on the date picker input to open the dropdown for group by
+            # await page.click("#s2id_detailedstatisticssearch-groupby > a")
+            # # Wait for the dropdown to be visible
+            # await page.wait_for_selector("#select2-result-label-21")
+
+            # # Select the appropriate group by option
+            # await page.click("#select2-result-label-21")
             # Click on the date picker input to open the dropdown
             await page.click("div.kv-drp-dropdown.form-control.daterange.daterange-inline")
 
             # Wait for the dropdown to be visible
             await page.wait_for_selector("div.daterangepicker.ltr.show-ranges.opensright")
-            
-            # Select "Yesterday" from the list
-            await page.click("li[data-range-key='Yesterday']")
 
-            # Click on the date picker input to open the dropdown for group by
-            await page.click("#s2id_detailedstatisticssearch-groupby > a")
-            # Wait for the dropdown to be visible
-            await page.wait_for_selector("#select2-result-label-21")
+            # Select "Custom Range" from the list
+            await page.click("li[data-range-key='Custom Range']")
 
-            # Select the appropriate group by option
-            await page.click("#select2-result-label-21")
+            # Call the function to extract and check date headers
+            await asyncio.sleep(2)
+                
+            xpath = await self.dateHeader(page)
+        
+            await self.extract_td_elements(page, xpath, self.targetdate)
             
             await asyncio.sleep(5)
             return True

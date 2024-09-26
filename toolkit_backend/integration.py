@@ -4,6 +4,7 @@ import urllib.request
 import sys
 import logging
 import pydub
+import aiohttp
 from datetime import datetime, timedelta
 import speech_recognition as sr
 from pydub.playback import play
@@ -34,7 +35,7 @@ import speech_recognition as sr
 from pydub.playback import play
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
-class ClickAduAutomation:
+class RichadsAutomation:
     def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
@@ -102,16 +103,18 @@ class ClickAduAutomation:
                         return {"status": 400, "text": "Failed to click report button."}
                     await page.wait_for_load_state('load')
                 
+                    state = await context.storage_state()
+                    Path(self.session_file_path).write_text(json.dumps(state))
+                    logging.info("Session saved.")
+                    
                     rch = await self.scrapping(page)
                     
                     await page.wait_for_load_state('load')
                     await asyncio.sleep(5)
 
-                    state = await context.storage_state()
-                    Path(self.session_file_path).write_text(json.dumps(state))
-                    logging.info("Session saved.")
                     
-                    # logging.info(f"Collected: {rch}")
+                    
+                    logging.info(f"Collected: {rch}")
                     return rch
                     break  # Exit the loop if successful
 
@@ -124,14 +127,8 @@ class ClickAduAutomation:
         
     async def fill_login_form(self, page):
         try:
-            # await page.fill('input[name="email"]', self.email)
-            # await page.fill('input[name="password"]', self.password)
-            await page.get_by_role("button", name="Sign in").click()
-            await page.get_by_role("link", name="Advertiser").nth(1).click()
-            await page.get_by_label("Email").click()
-            await page.get_by_label("Email").fill(self.email)
-            await page.locator("#oldPasswordPassword").click()
-            await page.locator("#oldPasswordPassword").fill(self.password)
+            await page.fill('input[name="email"]', self.email)
+            await page.fill('input[name="password"]', self.password)
             return True
         except Exception as e:
             logging.error(f"Error filling login form: {e}")
@@ -139,7 +136,7 @@ class ClickAduAutomation:
 
     async def submit_form(self, page):
         try:
-            await page.get_by_role("button", name="Log in").click()
+            await page.get_by_role("button", name="Log In").click()
             await asyncio.sleep(2)
             # await page.frame_locator("iframe[name=\"carrot-notification-frame\"]").locator("#notification-close").click()
             # await asyncio.sleep(2)
@@ -149,12 +146,8 @@ class ClickAduAutomation:
             await asyncio.sleep(5)
             # is_error_visible = await page.is_visible('div.error.ng-star-inserted')
             
-            status = await self.solve_recaptcha(page)
-            print(status)
-            if status != 'error': # means recaptcha is true and solve
-                print('resubmit the form..')
-                await page.get_by_role("button", name="Log in").click()
-            
+            await self.solve_recaptcha(page)
+            await page.get_by_role("button", name="Log In").click()
             return True
         except PlaywrightTimeoutError:
             logging.error("Timeout during form submission.")
@@ -171,174 +164,156 @@ class ClickAduAutomation:
     async def report(self, page):
         await asyncio.sleep(5)
         try:
-                await page.get_by_role("button", name="Campaign", exact=True).click()
-                await page.get_by_role("link", name="Campaigns").click()
+                await page.get_by_role("link", name="Reporting").click()
                 await asyncio.sleep(2)
-                logging.info("Campaigns button clicked using JavaScript.")
+                await page.get_by_role("link", name="Switch to Legacy version").click()
+                logging.info("Report button clicked using JavaScript.")
                 return True
         except PlaywrightTimeoutError:
-                logging.warning("Failed to click the Campaigns button using JavaScript.")
+                logging.warning("Failed to click the report button using JavaScript.")
                 return False
         
 
-    # Function to locate, print, and click the matching `td` elements under the calendar
-    async def extract_td_elements(self, page, header_tbody_xpath, previous_days):
+    # Example function to extract bearer token or specific cookies
+    def get_bearer_token_from_cookies(self,page,session_state):
+        origins = session_state.get('origins', [])
+    
+        # Iterate over the origins to find the relevant token
+        for origin in origins:
+            if origin.get('origin') == "https://my.richads.com":  # Replace with the correct origin
+                local_storage = origin.get('localStorage', [])
+                for item in local_storage:
+                    if item['name'].lower() == 'token':  # Look for the token key
+                        return item['value']  # Return the token value
+        return None
+
+    async def send_request(self, page, cid, dateT, raw_cookies, bearer_token):
+       
+        try:
+            logging.info(f"Sending POST request for cid: {cid}...")
+
+            
+            cookies = {cookie['name']: cookie['value'] for cookie in raw_cookies}
+            
+           
+
+            logging.info(f"bearer_token: {bearer_token}")
+            async with aiohttp.ClientSession(cookies=cookies) as session:
+                url = 'https://api.adx1.com/module/Cpmplatform/reportDruid/SimpleReport/'
+                payload = {
+                    'from': self.targetdate,
+                    'to': self.targetdate,
+                    'page': 1,
+                    'period': 'yesterday',
+                    'page_size': 1000,
+                    'segment': 'day',
+                    'segment_column': '',  # Assuming you need to define this field
+                    'search_columns[0]': 'accepted_clicks',
+                    'search_columns[1]': 'conversion_rate',
+                    'search_columns[2]': 'conversions',
+                    'search_columns[3]': 'media_cost',
+                    'search_columns[4]': 'impressions',
+                    'search_columns[5]': 'bids',
+                    'search_columns[6]': 'ctr',
+                    'search_columns[7]': 'roi',
+                    'search_columns[8]': 'conversions_sum',
+                    'search_columns[9]': 'conversions1',
+                    'search_columns[10]': 'engaged_clicks',
+                    'search_columns[11]': 'engaged_clicks_rate_100',
+                    'report_by': 'advertiser',
+                    'create_csv': 0,
+                    'filter[creative_id][id][0]': cid,
+                    'sort_property': 'timestamp',
+                    'sort_direction': 'DESC'
+                }
+
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',  # Adjust based on what API expects
+                }
+                if bearer_token:
+                    headers['Authorization'] = f'Bearer {bearer_token}' 
         
-        print(f"Target dates to click: {previous_days}")
-        await asyncio.sleep(5)
-        # Locate all matching `td` elements in the calendar
-        td_elements = await page.locator(header_tbody_xpath).all()
+                async with session.post(url, headers=headers, data=payload) as response:
+                    logging.info(f"Received response with status: {response.status}")
+                    # Ensure 'data' is only initialized inside the correct scope
+                    data = None
+                    formattedData = None
+                    if response.status == 200:
+                        try:
+                            data = await response.text()
+                            parsed_data = json.loads(data)
+                            logging.info(f"Data: {parsed_data}")
+                        except json.JSONDecodeError as json_err:
+                            logging.error(f"Failed to parse JSON for cid: {cid}, error: {json_err}")
+                            return  # Exit the function if JSON parsing fails
 
-        if not td_elements:
-            print("No `td` elements found in the calendar. Check the XPath or page state.")
-        else:
-            # Loop through each `td` element and check if it matches any of the target days
-            for td in td_elements:
-                td_text = await td.inner_text()  # Get the text content of the `td` element
-                td_text = td_text.strip()  # Clean up any surrounding whitespace
-                # Check if the text matches any of the previous three days
-                if td_text == str(previous_days):
-                    print(f"Clicking on day {td_text}")
-                    await td.dblclick()
-                    await asyncio.sleep(3)
-                    
-                    # #click the button apply
-                    # await page.click("//div[@class='drp-buttons']//button[contains(@class, 'applyBtn')]")
-                    await asyncio.sleep(3)
-
-    # Function to locate and check the month headers in both calendars
-    async def dateHeader(self, page):
-        # Define XPaths for selecting the left and right date headers
-        calendar_paths = {
-            # "left": "//div[@class='drp-calendar left']//th[@class='month']",
-            "right": "//div[@class='date_range__calendar-col date_range__calendar--hide']//table[contains(@class, 'date_range__calendar-table ng-star-inserted')]//th[contains(@class, 'month')]"
-        }
-
-        # Get the current month and year in the format 'Sep 2024'
-        current_month_year = datetime.now().strftime("%b %Y")
-
-        # Loop through the left and right calendars
-        for position, xpath in calendar_paths.items():
-            # Locate the calendar header
-            headers = await page.locator(xpath).all()
-
-            if not headers:
-                print(f"No {position} calendar headers found. Check the XPath or page state.")
-            else:
-                for header in headers:
-                    header_text = await header.inner_text()
-                    print(f"{position.capitalize()} Calendar Month:", header_text)
-
-                    # Check if the header matches the current month and year
-                    if current_month_year == header_text.strip():
-                        print(f"{position.capitalize()} formatted date: {header_text}")
-                        # Define the `td` elements XPath dynamically based on the calendar position
-                        # header_tbody_xpath = f"//div[@class='drp-calendar {position}']//td"
-                        header_tbody_xpath = f"//div[@class='date_range__calendar-col date_range__calendar--hide']//table[contains(@class, 'date_range__calendar-table ng-star-inserted')]//td[contains(@class, 'available')]"
-                        # await extract_td_elements(page, header_tbody_xpath, tday)
-                        return header_tbody_xpath
-
-
-
+                        # if 'data' in parsed_data and isinstance(parsed_data['data'], list):
+                        #     for campaign in parsed_data['data']:
+                        #         creative_id = cid
+                        #         impressions = campaign.get('impressions', '0')
+                        #         clicks = campaign.get('clicks', '0')
+                        #         spending = campaign.get('cost', '0.00')
+                        #         logging.info(f"Campaign ID: {creative_id}, Impressions: {impressions}, Clicks: {clicks}, Spending: {spending}")
+                                
+                        #         formattedData = {
+                        #                 'creative_id': creative_id,
+                        #                 'Impressions': impressions,
+                        #                 'Clicks': clicks,
+                        #                 'Spending': spending,
+                        #             }
+                            
+                        #     return formattedData
+                        # else:
+                        #     logging.error(f"'data' field is missing or not in the expected format for cid: {cid}")
+                    else:
+                        logging.error(f"Request failed with status {response.status} for cid: {cid}")
+                        return  # Exit the function if the request fails
+        except Exception as e:
+            logging.error(f"An error occurred for cid: {cid}: {str(e)}")
+       
+       
     async def scrapping(self, page):
-        try:  
-            await page.wait_for_load_state('networkidle')
-            await asyncio.sleep(5)
-            
-            await page.get_by_role("button", name="Today").click()
-            # await page.get_by_role("button", name="Yesterday").click()
-            # XPath for the input field (assuming it's the first input in the range)
-            # Clear the input field explicitly (Playwright's fill() usually does this automatically)
-            # Use the XPath expression in a Playwright locator
-            await page.locator("//html/body/cl-root/div/cl-layout-authenticated/div/div/cl-layout-body/cl-page-content/div/cl-campaigns-list/div/div[2]/cl-campaigns-list-actions/div[2]/cl-date-range/div/button").click()
-
-            await asyncio.sleep(3)
-            xpath = await self.dateHeader(page)
-            await self.extract_td_elements(page, xpath, self.targetdate)
-            
-            # await page.locator("cl-date-range").get_by_role("button", name="Set").click()
-            await page.locator("//div[@class='date_range__calendar-footer']//button[2]").click()
-        except PlaywrightTimeoutError:
-            logging.error("Setting of Yesterday failed")
         
         try:
+            os.makedirs(self.session_dir, exist_ok=True)
+            session_state = json.loads(Path(self.session_file_path).read_text())
+            raw_cookies = session_state.get('cookies', [])
+             # Extract Bearer Token (if necessary)
+            bearer_token = self.get_bearer_token_from_cookies(page,session_state)
             results = []
             for cid in self.creative_id:
-                cid_found = False  # Flag to check if cid is found in any row
-                
-                # Wait for the table to appear
-                await page.wait_for_selector('table.table__content')
-                # Select all rows in the tbody
-                rows = await page.query_selector_all('table.table__content tbody tr')
-                
-                for row in rows:
-                    # Extract the td elements for columns 3, 5, 6, and 11
-                    creative_id = await row.query_selector('td:nth-child(3)')
-                    impression = await row.query_selector('td:nth-child(5)')
-                    clicks = await row.query_selector('td:nth-child(6)')
-                    spending = await row.query_selector('td:nth-child(11)')
-
-                    # Extract text content from the selected td elements
-                    ccid = await creative_id.inner_text() if creative_id else '0'
-                    impressions = await impression.inner_text() if impression else '0'
-                    clicks_value = await clicks.inner_text() if clicks else '0'
-                    spending_value = await spending.inner_text() if spending else '0'
-
-                    # If the current row's creative ID matches the desired cid
-                    if cid == ccid:
-                        cid_found = True
-                        data = {
-                            'creative_id': cid,
-                            'Impressions': impressions,
-                            'Clicks': clicks_value,
-                            'Spending': spending_value,
-                        }
-                        results.append(data)
-                        break  # Continue to the next cid after processing the row
-
-                # If cid was not found, append default 0 values
-                if not cid_found:
-                    data = {
-                        'creative_id': cid,
-                        'Impressions': '0',
-                        'Clicks': '0',
-                        'Spending': '0',
-                    }
-                    results.append(data)
-                
-                # logging.info(f"Data for creative_id '{cid}' collected: {data}")
-
-            logging.info(f"Collected: {results}")
-            return results
+                try:
+                    responseData = await self.send_request(page, cid, self.targetdate, raw_cookies, bearer_token)
+                    results.append(responseData)
+                except Exception as e:
+                    # If any error occurs (including Locator.click timeout), assign default values
+                    logging.error(f"An error occurred with creative_id '{cid}': {str(e)}. Defaulting values to 0.")
+            logging.info(f"Response: {results}")
+            # return results
 
         except Exception as e:
             logging.error(f"An error occurred while scraping data: {str(e)}")
+            return None
+        except PlaywrightTimeoutError:
+            logging.error("Input yesterday wait timeout.")
             return False
 
-
     async def solve_recaptcha(self, page):
-        try:
-            # # Wait for the iframe to appear on the page
-            iframe_element = await page.wait_for_selector('iframe[title="reCAPTCHA"]', timeout=3000)
-            
-            if await page.wait_for_selector('iframe[title="reCAPTCHA"]'):
-                # Get the iframe's content frame
-                iframe = await iframe_element.content_frame()
-                # Now you can interact with elements inside the iframe
-                recaptcha_checkbox = await iframe.wait_for_selector('#recaptcha-anchor')
-                await recaptcha_checkbox.click()
-                if await self.check_dos_captcha(page):
-                    raise Exception("Detected 'Try again later' message.")
-                await self.solve_audio_challenge(page)
-                
-                return 'success'
-            else:
-                print("ReCAPTCHA checkbox not found.")
-                
-                return 'error'
-        except Exception as e:
-            print(f"[ERROR] reCAPTCHA is not visible: {e}")
-            return 'error'
+        # # Wait for the iframe to appear on the page
+        iframe_element = await page.wait_for_selector('iframe[title="reCAPTCHA"]')
+        
+        if await page.wait_for_selector('iframe[title="reCAPTCHA"]'):
+            # Get the iframe's content frame
+            iframe = await iframe_element.content_frame()
+            # Now you can interact with elements inside the iframe
+            recaptcha_checkbox = await iframe.wait_for_selector('#recaptcha-anchor')
+            await recaptcha_checkbox.click()
+            if await self.check_dos_captcha(page):
+                raise Exception("Detected 'Try again later' message.")
+            await self.solve_audio_challenge(page)
+        else:
+            print("ReCAPTCHA checkbox not found.")
+
     async def check_dos_captcha(self, page):
         try:
             print("[INFO] Checking for the 'Try again later' message...")
@@ -430,4 +405,16 @@ class ClickAduAutomation:
             except PlaywrightTimeoutError:
                 logging.error("Audio challenge failed due to timeout.")
                 raise Exception("Audio challenge failed due to timeout.")
-        
+# Example usage in another file
+if __name__ == "__main__":
+    automation = RichadsAutomation(
+        keywords="riadldbjbd",
+        email="bo.cc@chengyi-1.com",
+        password="B@j!09876**1",
+        link="https://my.richads.com/login",
+        creative_id=['3318238'],
+        dashboard="https://my.richads.com/campaigns",
+        platform="richads",
+        targetdate = '2024-09-23'
+    )
+    asyncio.run(automation.run())

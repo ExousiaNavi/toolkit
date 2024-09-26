@@ -13,7 +13,7 @@ router = APIRouter()
 @router.post("/fetch")
 async def fetch_test_data(request: TestRequest):
     print(request)
-    test = BoAutomation(request.email, request.password, request.link, request.currency, request.keyword)
+    test = BoAutomation(request.email, request.password, request.link, request.currency, request.keyword, request.targetdate)
     # print(request.email)
     try:
         data = await test.fetch_bo()
@@ -26,7 +26,7 @@ async def fetch_test_data(request: TestRequest):
 @router.post("/data")
 async def fetch_fe_data(request: FeRequest):
     print(request)
-    fe_test = FeAutomation(request.username, request.password, request.link, request.currency)
+    fe_test = FeAutomation(request.username, request.password, request.link, request.currency, request.targetdate)
     # # print(request.email)
     try:
         data = await fe_test.fetch_fe()
@@ -39,7 +39,7 @@ async def fetch_fe_data(request: FeRequest):
 @router.post("/clicks")
 async def fetch_fe_data(request: ClicksAndImpressionRequest):
     #email='abiralmilan1014@gmail.com' password='B@j!qwe@4444' link='https://bajipartners.com/page/affiliate/login.jsp' creative_id=['20948', '20947', '22698']
-    click_test = ClickAutomation(request.keywords, request.email, request.password, request.link, request.creative_id, request.dashboard, request.platform)
+    click_test = ClickAutomation(request.keywords, request.email, request.password, request.link, request.creative_id, request.dashboard, request.platform, request.targetdate)
     print(request)
     
     try:
@@ -64,6 +64,7 @@ async def automate_sheet(request: SpreedSheetRequest):
     for item in request.request_data:
         try:
             spreadsheet_info = item['spreadsheet']
+            target_date = item.get('target_date', None)
             spreed_id = spreadsheet_info['spreed_id']
             platform = spreadsheet_info['platform']
             keyword = item.get('keyword', None)  # Ensure keyword is fetched from the item
@@ -84,7 +85,7 @@ async def automate_sheet(request: SpreedSheetRequest):
                 'keys.json',
                 ["https://www.googleapis.com/auth/spreadsheets"],
                 # for BO only
-                spreed_id, platform, bo_data, keyword
+                spreed_id, platform, bo_data, keyword, target_date
             )
             data = await gmanager.run()  # Await the asynchronous run method
             results.append(data)
@@ -111,7 +112,7 @@ async def automate_sheet(request: SpreedSheetRequest):
                             'keys.json',
                             ["https://www.googleapis.com/auth/spreadsheets"],
                             #for cost, impressions, clicks
-                            spreed_id, platform, [spending, imprs, clicks, nsu, ftd], creative_id
+                            spreed_id, platform, [spending, imprs, clicks, nsu, ftd], creative_id, target_date
                         )
                         data = await gmanager.run()  # Await the asynchronous run method
                         results.append(data)

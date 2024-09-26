@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\CLickAndImprs;
 use App\Models\Currency;
 use App\Models\Platform;
+use App\Models\SpreadsheetId;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,8 @@ class BajiController extends Controller
         // dd($affiliates);
         $collectionKeys = $this->manualKeys();
         $m_count = BO::where('is_manual',true)->where('brand','baji')->count();
-        return view('admin.pages.baji', compact("m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
+        $presentCurType = SpreadsheetId::where('brand', 'bj88')->distinct()->pluck('currencyType')->toArray();
+        return view('admin.pages.baji', compact("presentCurType","m_count","collectionKeys","currencies", 'bo', 'username', 'completedTask', 'platforms'));
     }
 
     //manual key collections
@@ -122,17 +124,14 @@ class BajiController extends Controller
     //get the bo id based on affiliates username
     private function bosID($username){
         // Step 1: Find the record by affiliate_username
-        $boRecord = BO::where('affiliate_username', $username)->first();
+        $boRecord = BO::where('affiliate_username', $username)->where('is_merged', false)->first();
 
         if ($boRecord) {
             // Step 2: Update the record with the new data
             $boRecord->update(['is_manual'=>false]);
 
-            // Step 3: Retrieve the updated record
-            $updatedRecord = BO::where('affiliate_username', $username)->first();
-
-            // Optionally return the updated record
-            return $updatedRecord->id;
+            // Step 3: Return the ID of the updated record
+            return $boRecord->id;
         } else {
             // If the record doesn't exist, handle it accordingly
             return response()->json(['message' => 'Record not found.'], 404);

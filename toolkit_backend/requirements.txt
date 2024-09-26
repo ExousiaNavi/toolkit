@@ -11,3 +11,8 @@ sounddevice
 numpy
 google-api-python-client
 google-auth
+fake-useragent
+beautifulSoup4
+aiohttp
+google-auth-oauthlib 
+google-auth-httplib2 

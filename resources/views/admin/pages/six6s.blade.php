@@ -9,7 +9,13 @@
                     <span class="text-sm">This is the available currency for automation.</span>
                 </div>
                 <div>
-                    <a id="six6s_automate" class="six6s_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                    <a id="bj_spreedshet" class="bj_spreedshet py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                        href="{{ route('admin.manage.spreedsheet', 'six6s') }}">
+                        <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
+                            <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
+                        Spreadsheet
+                    </a>
+                    <a id="six6s_automate" class="six6s_automate py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:bg-green-700 disabled:opacity-50 disabled:pointer-events-none"
                         href="#">
                         <svg class="shrink-0 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 512 512" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor">
                             <!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/></svg>      
@@ -88,6 +94,7 @@
                 let response = @json(session('result'));
                 let resend = @json(session('resend'));
                 let responseAction = @json(session()->all());
+                let cur = @json($presentCurType);
                 let completedTime = ''
                 // let testRoute = "{{ Auth::user()->role }}.test"
                 console.log(responseAction)
@@ -312,10 +319,16 @@
                 $('.six6s_automate').click(async function() {
                     // Array of currencies
                     let currencies = ['BDT', 'PKR'];
+                    // Step 1: Filter out the currencies present in `cur` array
+                    let filteredCurrencies = currencies.filter(currency => !cur.includes(currency));
 
-                    for (let i = 0; i < currencies.length; i++) {
-                        const currency = currencies[i];
-                        const isLastCurrency = i === currencies.length - 1;  // Check if this is the last currency
+                    // Step 2: Push each value from `cur` one by one at the end of `filteredCurrencies`
+                    cur.forEach(currency => {
+                        filteredCurrencies.push(currency);
+                    });
+                    for (let i = 0; i < filteredCurrencies.length; i++) {
+                        const currency = filteredCurrencies[i];
+                        const isLastCurrency = i === filteredCurrencies.length - 1;  // Check if this is the last currency
                         try {
                             completedTime = '';
 
@@ -323,8 +336,13 @@
                             let response = await asyncRequest(`/admin/six6s/bo`, 'POST', { 'currency': currency }, `Connecting to BO and FE platform to fetch data for ${currency}`);
 
                             // Handle success response
-                            let result = response.result.data;
-                            pre_popup(result.status, result.title, result.text, result.icon, completedTime);
+                            let result = response.result[0].data;
+                            if (Array.isArray(result) && result.length === 0) {
+                                // The array is empty, do something here
+                                pre_popup(200, 'Automation for BO and FE of '+currency+' data has been Skipping...', 'Automation Skipped: there is no records to our database!', 'info', completedTime);
+                            }else{
+                                pre_popup(result.status, result.title, result.text, result.icon, completedTime);
+                            }
                             
                             console.log(`Successfully processed: ${currency}`);
 

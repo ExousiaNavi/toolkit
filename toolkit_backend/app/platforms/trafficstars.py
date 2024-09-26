@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 logging.basicConfig(level=logging.INFO)
 
 class TrafficStarsAutomation:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
         self.password = password
@@ -18,6 +18,7 @@ class TrafficStarsAutomation:
         self.creative_id = creative_id
         self.dashboard = dashboard
         self.platform = platform
+        self.targetdate = targetdate
         self.session_dir = "sessions"
         self.browser = None
         self.context = None
@@ -135,8 +136,30 @@ class TrafficStarsAutomation:
             await self.page.wait_for_selector("body > div.daterangepicker.dropdown-menu.opensright", state='visible', timeout=60000)
             logging.info("Date picker dropdown is visible")
 
-            await self.page.click('li:has-text("Yesterday")')
-            logging.info("Yesterday's date selected")
+            # await self.page.click('li:has-text("Yesterday")')
+            # logging.info("Yesterday's date selected")
+            
+            #//div[@class='daterangepicker_start_input']//input for start
+            # Step 1: Click the input field to focus on it
+            await self.page.locator("//div[@class='daterangepicker_start_input']//input").click()
+
+            # Step 2: Clear the input field by filling it with an empty string
+            await self.page.fill("//div[@class='daterangepicker_start_input']//input", "")
+
+            # Step 3: Fill the input field with the new value
+            await self.page.fill("//div[@class='daterangepicker_start_input']//input", self.targetdate)  # Replace "Your New Value" with the actual value
+            
+            #//div[@class='daterangepicker_start_input']//input for end
+            # Step 1: Click the input field to focus on it
+            await self.page.locator("//div[@class='daterangepicker_end_input']//input").click()
+
+            # Step 2: Clear the input field by filling it with an empty string
+            await self.page.fill("//div[@class='daterangepicker_end_input']//input", "")
+
+            # Step 3: Fill the input field with the new value
+            await self.page.fill("//div[@class='daterangepicker_end_input']//input", self.targetdate)  # Replace "Your New Value" with the actual value
+
+            
             await self.page.wait_for_selector("#main-content > section > div:nth-child(3) > section > div > div > form > div.pull-right > input", state='visible')
             await self.page.click("#main-content > section > div:nth-child(3) > section > div > div > form > div.pull-right > input", force=True)
             logging.info("Applied the selected date range")
@@ -274,26 +297,3 @@ class TrafficStarsAutomation:
         except Exception as e:
             logging.error(f"Error extracting row data: {e}")
             raise
-
-# # Example usage:
-# if __name__ == "__main__":
-#     keywords="trastarpkr",
-#     email="abiralmilan1014@gmail.com",
-#     password="B@j!qwe@4444",
-#     link="https://id.trafficstars.com/realms/trafficstars/protocol/openid-connect/auth?scope=openid&redirect_uri=http%3A%2F%2Fadmin.trafficstars.com%2Faccounts%2Fauth%2F%3Fnext%3Dhttps%3A%2F%2Fadmin.trafficstars.com%2F&response_type=code&client_id=web-app",
-#     creative_id=['710956', '783520'],
-#     dashboard="dashboard link",
-#     platform="platform links",
-
-#     automation = TrafficStarsAutomation(keywords, email, password, link, creative_id, dashboard, platform)
-#     asyncio.run(automation.run())
-
-
-# if __name__ == "__main__":
-#     asyncio.run(main(
-#         keywords="trastarpkr",
-#         email="abiralmilan1014@gmail.com",
-#         password="B@j!qwe@4444",
-#         link="https://id.trafficstars.com/realms/trafficstars/protocol/openid-connect/auth?scope=openid&redirect_uri=http%3A%2F%2Fadmin.trafficstars.com%2Faccounts%2Fauth%2F%3Fnext%3Dhttps%3A%2F%2Fadmin.trafficstars.com%2F&response_type=code&client_id=web-app",
-#         creative_id=['710956', '783520']
-#     ))

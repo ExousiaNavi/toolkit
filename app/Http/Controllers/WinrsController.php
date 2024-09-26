@@ -351,4 +351,27 @@ class WinrsController extends Controller
         ];
         return $accounts[$key];
     }
+
+    public function getPreviousDays()
+    {
+        // Get today's date using Carbon
+        $today = Carbon::now();
+
+        // Check if today is Monday
+        if ($today->isMonday()) {
+            // If today is Monday, get the previous 4 days
+            $previousDays = [];
+            for ($i = 1; $i < 4; $i++) {
+                // Format the date as 'YYYY/MM/DD'
+                $previousDays[] = $today->copy()->subDays($i)->format('Y/m/d');
+            }
+            echo "Today is Monday. Processing the last 4 days: " . implode(', ', $previousDays);
+        } else {
+            // If today is not Monday, get only yesterday
+            $previousDays = [$today->subDay()->format('Y/m/d')];
+            echo "Today is not Monday. Processing only yesterday: " . implode(', ', $previousDays);
+        }
+        // dd($previousDays);
+        return $previousDays;
+    }
 }

@@ -1,3 +1,4 @@
+# scraper/adcash_scraper.py
 import os
 import asyncio
 import json
@@ -11,7 +12,7 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 logging.basicConfig(level=logging.INFO)
 
 class AdxadScraper:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
         self.password = password
@@ -19,6 +20,7 @@ class AdxadScraper:
         self.creative_id = creative_id
         self.dashboard = dashboard
         self.platform = platform
+        self.targetdate = targetdate
         self.session_dir = "sessions"
         self.session_file = self.get_session_file()
 
@@ -162,11 +164,11 @@ class AdxadScraper:
                 print("Element not fully loaded or visible")
                 return False
 
-            await page.screenshot(path="before_click.png")
+            # await page.screenshot(path="before_click.png")
             await element.click(force=True)
             print("Click on date range picker successful")
 
-            await page.screenshot(path="after_click.png")
+            # await page.screenshot(path="after_click.png")
             await page.wait_for_selector("div.adxad-options", state='visible', timeout=60000)
             print("Date picker dropdown is visible")
 

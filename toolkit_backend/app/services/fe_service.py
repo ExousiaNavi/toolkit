@@ -9,11 +9,12 @@ import asyncio
 logging.basicConfig(level=logging.INFO)
 
 class FeAutomation:
-    def __init__(self, username: str, password: str, link: str, currency: str, max_retries=3):
+    def __init__(self, username: str, password: str, link: str, currency: str,targetdate: str, max_retries=3):
         self.username = username
         self.password = password
         self.link = link
         self.currency = currency
+        self.targetdate = targetdate
         self.max_retries = max_retries
         self.session = None  # Session management for authenticated requests
 
@@ -102,24 +103,30 @@ class FeAutomation:
     async def search_data(self, page):
         retries = 0
         while retries < self.max_retries:
+            input_date = '//*[@id="registrationsForm"]/div/div[2]/div[2]/div[1]/input'
             date_btn = '//*[@id="dateFilter"]/button'
             yesterday_btn = '//*[@id="dateFilter"]/div/dl/dd/div/div/button[2]'
             # entries_btn = '//*[@id="registrationsTable_length"]/label/select'
             # entries_value = '//*[@id="registrationsTable_length"]/label/select/option[4]'
             # try using JavaScript to click the button
-            try:
-                await page.eval_on_selector(f'xpath={date_btn}', "element => element.click()")
-                logging.info("date button clicked using JavaScript.")
-            except PlaywrightTimeoutError:
-                logging.warning("Failed to click the menu button using JavaScript.")
-                # Wait for the network to be idle after clicking
+            # try:
+            #     await page.eval_on_selector(f'xpath={date_btn}', "element => element.click()")
+            #     logging.info("date button clicked using JavaScript.")
+            # except PlaywrightTimeoutError:
+            #     logging.warning("Failed to click the menu button using JavaScript.")
+            #     # Wait for the network to be idle after clicking
                 
-            await page.wait_for_load_state('networkidle')
-            await asyncio.sleep(2)
+            # await page.wait_for_load_state('networkidle')
+            # await asyncio.sleep(2)
             
             try:
-                await page.eval_on_selector(f'xpath={yesterday_btn}', "element => element.click()")
-                logging.info("date button clicked using JavaScript.")
+                # await page.eval_on_selector(f'xpath={yesterday_btn}', "element => element.click()")
+                originaldate = self.targetdate
+                formatted_date = originaldate.replace('/','-')
+                await page.fill("//*[@id=\"registrationsForm\"]/div/div[2]/div[2]/div[1]/input", formatted_date)
+                await asyncio.sleep(2)
+                await page.fill("//*[@id=\"registrationsForm\"]/div/div[2]/div[2]/div[2]/input", formatted_date)
+                logging.info("filled successfully for input date.")
             except PlaywrightTimeoutError:
                 logging.warning("Failed to click the menu button using JavaScript.")
                 # Wait for the network to be idle after clicking
@@ -209,25 +216,32 @@ class FeAutomation:
         await page.wait_for_load_state('networkidle')
         await asyncio.sleep(2)
         
-        try:
-            # Try using JavaScript to click the second menu button
-            await page.eval_on_selector(f'xpath={fdt_date_btn}', "element => element.click()")
-            logging.info("NSU button clicked using JavaScript.")
-        except PlaywrightTimeoutError:
-            logging.warning("Failed to click the NSU button using JavaScript.")
-            # Wait for the network to be idle after clicking
-        await page.wait_for_load_state('networkidle')
+        # try:
+        #     # Try using JavaScript to click the second menu button
+        #     await page.eval_on_selector(f'xpath={fdt_date_btn}', "element => element.click()")
+        #     logging.info("NSU button clicked using JavaScript.")
+        # except PlaywrightTimeoutError:
+        #     logging.warning("Failed to click the NSU button using JavaScript.")
+        #     # Wait for the network to be idle after clicking
+        # await page.wait_for_load_state('networkidle')
+        # await asyncio.sleep(2)
+        
+        # try:
+        #     # Try using JavaScript to click the second menu button
+        #     await page.eval_on_selector(f'xpath={fdt_yesterday}', "element => element.click()")
+        #     logging.info("NSU button clicked using JavaScript.")
+        # except PlaywrightTimeoutError:
+        #     logging.warning("Failed to click the NSU button using JavaScript.")
+        #     # Wait for the network to be idle after clicking
+        # await page.wait_for_load_state('networkidle')
+        
+        originaldate = self.targetdate
+        formatted_date = originaldate.replace('/','-')
+        await page.fill("//*[@id=\"performanceForm\"]/div[3]/div[1]/input", formatted_date)
         await asyncio.sleep(2)
-        
-        try:
-            # Try using JavaScript to click the second menu button
-            await page.eval_on_selector(f'xpath={fdt_yesterday}', "element => element.click()")
-            logging.info("NSU button clicked using JavaScript.")
-        except PlaywrightTimeoutError:
-            logging.warning("Failed to click the NSU button using JavaScript.")
-            # Wait for the network to be idle after clicking
-        await page.wait_for_load_state('networkidle')
-        
+        await page.fill("//*[@id=\"performanceForm\"]/div[3]/div[2]/input", formatted_date)
+        logging.info("filled successfully for input date.")
+                
         await asyncio.sleep(2)
             
         # Assuming 'registrationsTable_length' is the name attribute of the select element

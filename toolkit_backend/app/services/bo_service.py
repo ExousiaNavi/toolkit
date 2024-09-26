@@ -9,12 +9,13 @@ import asyncio
 logging.basicConfig(level=logging.INFO)
 
 class BoAutomation:
-    def __init__(self, email: str, password: str, link: str, currency: str, keyword: list[str], max_retries=3):
+    def __init__(self, email: str, password: str, link: str, currency: str, keyword: list[str], targetdate: str, max_retries=3):
         self.email = email
         self.password = password
         self.link = link
         self.keyword = keyword # Now expecting a list of strings
         self.currency = currency
+        self.targetdate = targetdate
         self.max_retries = max_retries
         self.session = None  # Session management for authenticated requests
         self._currency_type = {
@@ -192,13 +193,14 @@ class BoAutomation:
         yesterday = datetime.now() - timedelta(days=1)
         return yesterday.year, yesterday.month, yesterday.day
 
-    async def set_date(self, page, year, month, day):
-        date_string = f"{year}/{month:02d}/{day:02d}"
+    async def set_date(self, page, tdate):
+        # "2024/09/05"format 
+        # date_string = f"{year}/{month:02d}/{day:02d}"
         input_selectors = ['#searchTimeStart', '#searchTimeEnd']
         
         # Fill the date fields
         for selector in input_selectors:
-            await page.fill(selector, date_string)
+            await page.fill(selector, tdate)
         
         # Define the XPath selector for the search button
         searchBtn_xpath = '//*[@id="content"]/div/div[3]/div/div/div/div/div/div[2]/form/div[6]/div/div[2]/div/input'
@@ -421,7 +423,7 @@ class BoAutomation:
                 if not await self.select_affiliate(page, keyword_list):
                     return {"status": 400, "text": "Failed to select affiliate."}
                 
-                if not await self.set_date(page, year, month, day):
+                if not await self.set_date(page, self.targetdate):
                     return {"status":400, "text": "Failed to set date."}
                 
                 # if not await self.click_search(page):

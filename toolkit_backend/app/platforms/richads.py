@@ -35,7 +35,7 @@ from pydub.playback import play
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
 class RichadsAutomation:
-    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform):
+    def __init__(self, keywords, email, password, link, creative_id, dashboard, platform, targetdate):
         self.keywords = keywords
         self.email = email
         self.password = password
@@ -43,6 +43,7 @@ class RichadsAutomation:
         self.creative_id = creative_id
         self.dashboard = dashboard
         self.platform = platform
+        self.targetdate = targetdate
         self.ffmpeg_path = os.path.normpath(os.path.join(os.getcwd(), 'ffmpeg.exe'))
         self.ffprobe_path = os.path.normpath(os.path.join(os.getcwd(), 'ffprobe.exe'))
         self.path_to_mp3 = os.path.normpath(os.path.join(os.getcwd(), "sample.mp3"))
@@ -177,7 +178,17 @@ class RichadsAutomation:
             await asyncio.sleep(5)
             
             await page.locator(".selectize-input").first.click()
-            await page.get_by_text("Yesterday").click()
+            await page.get_by_text("Custom").click()
+            #fill the date filled
+            await asyncio.sleep(2)
+            await page.locator('xpath=//*[@id="from_dp"]').click()
+            await asyncio.sleep(2)
+            
+            await page.locator("xpath=//div[@class='daterangepicker_input']//input[@name='daterangepicker_start']").fill(self.targetdate)
+            await page.locator("xpath=//div[@class='daterangepicker_input']//input[@name='daterangepicker_end']").fill(self.targetdate)
+            await asyncio.sleep(2)
+            await page.locator("xpath=//div[@class='range_inputs']//button[contains(@class, 'applyBtn')]").click()
+            await asyncio.sleep(4)
             await page.locator("span > div > div > div > .selectize-control > .selectize-input").first.click()
             await page.get_by_text("Creative ID").click()
             await page.locator(".text-field").click()
